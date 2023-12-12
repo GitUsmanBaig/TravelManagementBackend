@@ -1,0 +1,70 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore log files and other logs
+*.log
+logs
+npm-debug.log*
+
+# Ignore .env files (store sensitive or environment-specific data)
+.env
+
+# Ignore .DS_Store (macOS system file)
+.DS_Store
+
+# Ignore Visual Studio Code workspace and user settings
+.vscode/
+
+# Ignore npm's generated files
+package-lock.json
+npm-debug.log*
+
+# Ignore Yarn's generated files
+yarn-error.log
+yarn.lock
+
+# Ignore any local database files
+*.sqlite
+
+# Ignore test coverage reports
+coverage/
+
+# Ignore build output
+build/
+dist/
+
+# Ignore .idea directory (used by PhpStorm)
+.idea/
+
+# Ignore .vs directory (used by Visual Studio)
+.vs/
+
+# Ignore any compiled files
+*.compiled.js
+
+# Ignore logs and generated files from testing frameworks
+/test/logs/
+/test/results/
+
+# Ignore IDE-specific files
+/.idea/
+*.suo
+*.ntvs_analysis
+/.vscode
+
+# Ignore operating system files
+Thumbs.db
+.DS_Store
+ehthumbs.db
+
+# Ignore temporary files
+*.swp
+*.swo
+*.swn
+
+# Ignore backup files
+*~
+*.bak
+
+# Ignore node.js debug log
+nodejs*.log
