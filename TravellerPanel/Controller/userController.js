@@ -64,4 +64,26 @@ const forgot_password = async (req, res) => {
     }
 };
 
-module.exports = { signup_user, login_user, forgot_password };
+const logout_user = (req, res) => {
+    // console.log('Auth token: ' + req.cookies.auth_token);
+    res.cookie('auth_token', '');
+    // console.log('now Auth token: ' + req.cookies.auth_token);
+    res.status(200).send('Logged out successfully');
+};
+
+const customize_profile = async (req, res) => {
+    const userId = req.user.id;
+    const { contact, preferences, password } = req.body;
+    try {
+        const user = await User.findById(userId);
+        if (contact) user.contact = contact;
+        if (preferences) user.preferences = preferences;
+        if (password) user.password = password;
+        await user.save();
+        res.status(200).send('Credentials updated successfully');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+module.exports = { signup_user, login_user, forgot_password, logout_user, customize_profile };
