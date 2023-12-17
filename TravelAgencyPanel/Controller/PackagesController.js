@@ -40,7 +40,6 @@ const createPackage = async (req, res) => {
 
 const getAllPackages = async (req, res) => {
   Package.find({})
-    .populate("hotel travelAgency city")
     .then(data => {
       res
         .status(200)
@@ -57,7 +56,6 @@ const getPackageById = async (req, res) => {
   const { id } = req.params;
 
   Package.findById(id)
-    .populate("hotel travelAgency city")
     .then(data => {
       res.status(200).send({ message: "Package retrieved successfully", data });
     })
