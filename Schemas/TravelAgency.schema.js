@@ -5,6 +5,7 @@ const travelAgencySchema = new mongoose.Schema({
   email: { type: String, required: true },
   helplineNumber: { type: String, required: true },
   logoUrl: { type: String, required: true },
+  userFeedback: [{ type: String }],
 });
 
 const model = mongoose.model("TravelAgency", travelAgencySchema);

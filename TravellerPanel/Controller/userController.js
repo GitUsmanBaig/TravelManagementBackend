@@ -4,6 +4,7 @@ const SECRET_KEY = "mysecretkey";
 const nodemailer = require('nodemailer');
 const Package = require("../../Schemas/Package.schema");
 const Booking = require("../../Schemas/Booking.schema");
+const TravelAgency = require("../../Schemas/TravelAgency.schema");
 
 const signup_user = async (req, res) => {
     const { name, email, password, CNIC, contact, preferences } = req.body;
@@ -224,17 +225,119 @@ const updateBooking = async (req, res) => {
         if (noOfPersons < booking.noOfPersons) {
             const diff = booking.noOfPersons - noOfPersons;
             package.noOfPersons += diff;
-            package.totalAmount -= diff * package.totalAmount;
+            booking.totalAmount = noOfPersons * package.totalAmount;
         }
         else {
             const diff = noOfPersons - booking.noOfPersons;
             package.noOfPersons -= diff;
-            package.totalAmount += diff * package.totalAmount;
+            booking.totalAmount = noOfPersons * package.totalAmount;
         }
         booking.noOfPersons = noOfPersons;
         await booking.save();
         await package.save();
         res.status(200).send('Number of persons updated successfully');
+    }
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const getBookings = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const bookings = await Booking.find({ customerId: userId });
+        res.status(200).send(bookings);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const getBookingById = async (req, res) => {
+    const bookingId = req.params.id;
+    try {
+        const booking = await Booking.findById(bookingId);
+        res.status(200).send(booking);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const getPackageById = async (req, res) => {
+    const packageId = req.params.id;
+    try {
+        const package = await Package.findById(packageId);
+        res.status(200).send(package);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const addRating = async (req, res) => {
+    const { rating } = req.body;
+    const bookingId = req.params.id;
+    const userId = req.user.id;
+    try {
+        const booking = await Booking.findOne({ customerId: userId, _id: bookingId });
+        if (!booking) return res.status(422).send('You have not booked this package');
+        const package = await Package.findById(booking.packageId);
+        if (!package) return res.status(404).send('Package not found');
+        //if (Date.now() < booking.endDate) return res.status(422).send('You cannot rate this package before the end date');
+        if (rating < 0 || rating > 5) return res.status(422).send('Rating must be between 0 and 5');
+        package.ratings.push(rating);
+        let sum = 0;
+        package.ratings.forEach(rating => {
+            sum += rating;
+        });
+        package.avgRating = sum / package.ratings.length;
+        await package.save();
+        res.status(200).send('Rating added successfully');
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
+const addReview = async (req, res) => {
+    const { review } = req.body;
+    const bookingId = req.params.id;
+    const userId = req.user.id;
+    try {
+        const booking = await Booking.findOne({ customerId: userId, _id: bookingId });
+        if (!booking) return res.status(422).send('You have not booked this package');
+        const package = await Package.findById(booking.packageId);
+        if (!package) return res.status(404).send('Package not found');
+        //if (Date.now() < booking.endDate) return res.status(422).send('You cannot review this package before the end date');
+        const user = await User.findOne({ _id: userId });
+        const reviewtoadd = `${user.name}: ${review}`;
+        package.reviews.push(reviewtoadd);
+        await package.save();
+        res.status(200).send('Review added successfully');
+    }
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const sendFeedback = async (req, res) => {
+    const { feedback } = req.body;
+    const userId = req.user.id;
+    const bookingId = req.params.id;
+    try {
+        const booking = await Booking.findById(bookingId);
+        if (!booking) return res.status(404).send('Booking not found');
+        const package = await Package.findById(booking.packageId);
+        if (!package) return res.status(404).send('Package not found');
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).send('User not found');
+        const travelAgency = await TravelAgency.findById(package.travelAgency);
+        if (!travelAgency) return res.status(404).send('Travel Agency not found');
+        //add user name and user email to feedback
+        //if (Date.now() < booking.endDate) return res.status(422).send('You cannot send feedback before the end date');
+        //push user name, email and feedback to travel agency
+        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
+        console.log(feedbacktoadd);
+        travelAgency.userFeedback.push(feedbacktoadd);
+        await travelAgency.save();
+        res.status(200).send('Feedback sent successfully');
     }
     catch (err) {
         res.status(500).send(err.message);
@@ -251,5 +354,11 @@ module.exports = {
     bookPackage,
     confirmationPackage,
     cancelBooking,
-    updateBooking
+    updateBooking,
+    getBookings,
+    getBookingById,
+    getPackageById,
+    addRating,
+    addReview,
+    sendFeedback
 };

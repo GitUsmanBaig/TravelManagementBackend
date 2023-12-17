@@ -24,6 +24,9 @@ const packageSchema = new mongoose.Schema({
     required: true,
   },
   disabled: { type: Boolean, default: false },
+  ratings: [{ type: Number }],
+  reviews: [{ type: String }],
+  avgRating: { type: Number },
 });
 
 const model = mongoose.model("Package", packageSchema);

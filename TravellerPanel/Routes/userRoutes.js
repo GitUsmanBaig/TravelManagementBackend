@@ -25,4 +25,16 @@ router.put('/cancelBooking/:id', authenticate_user, userController.cancelBooking
 
 router.put('/updateBooking/:id', authenticate_user, userController.updateBooking);
 
+router.get('/getBookings', authenticate_user, userController.getBookings);
+
+router.get('/getBookings/:id', authenticate_user, userController.getBookingById);
+
+router.get('/getPackageById/:id', authenticate_user, userController.getPackageById);
+
+router.put('/addRating/:id', authenticate_user, userController.addRating);
+
+router.put('/addReview/:id', authenticate_user, userController.addReview);
+
+router.post('/addComplaint/:id', authenticate_user, userController.sendFeedback);
+
 module.exports = router;
