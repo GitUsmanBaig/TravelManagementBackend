@@ -11,7 +11,8 @@ const packageSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   imageUrl: { type: String, required: true },
   otherImages: [{ type: String, required: true }],
-
+  totalAmount: { type: Number, required: true },
+  noOfPersons: { type: Number, required: true },
   hotel: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Hotel",
@@ -22,7 +23,7 @@ const packageSchema = new mongoose.Schema({
     ref: "TravelAgency",
     required: true,
   },
-   disabled: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
 });
 
 const model = mongoose.model("Package", packageSchema);

@@ -14,6 +14,7 @@ const createPackage = async (req, res) => {
     hotel,
     travelAgency,
     city,
+    totalAmount,
   } = req.body;
 
   Package.create({
@@ -30,6 +31,7 @@ const createPackage = async (req, res) => {
     travelAgency,
     city,
     disabled: false,
+    totalAmount,
   })
     .then(data => {
       res.status(201).send({ message: "Package created successfully", data });
