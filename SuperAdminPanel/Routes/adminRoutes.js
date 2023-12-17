@@ -16,5 +16,14 @@ router.put('/disable_user/:userId', authenticate_admin, adminController.disable_
 //enable user
 router.put('/enable_user/:userId', authenticate_admin, adminController.enable_user);
 
+//get all packages
+router.get('/getAllPackages', authenticate_admin, adminController.getAllPackages);
+
+//disable package
+router.put('/disable_package/:packageId', authenticate_admin, adminController.disable_package);
+
+//enable package
+router.put('/enable_package/:packageId', authenticate_admin, adminController.enable_package);
+
 module.exports = router;
 

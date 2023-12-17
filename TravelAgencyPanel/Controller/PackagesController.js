@@ -29,6 +29,7 @@ const createPackage = async (req, res) => {
     hotel,
     travelAgency,
     city,
+    disabled: false,
   })
     .then(data => {
       res.status(201).send({ message: "Package created successfully", data });

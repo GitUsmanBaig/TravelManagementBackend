@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const SECRET_KEY = "mysecretkey";
 const nodemailer = require('nodemailer');
 const User = require('../../TravellerPanel/Schema/userProfile.js');
+const Package = require("../../Schemas/Package.schema");
 
 
 //signup admin
@@ -107,5 +108,55 @@ const enable_user = async (req, res) => {
 }; 
 
 
-module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user };
+const getAllPackages = async (req, res) => {
+    Package.find({})
+      .then(data => {
+        res
+          .status(200)
+          .send({ message: "Packages retrieved successfully", data });
+      })
+      .catch(err => {
+        res
+          .status(500)
+          .send({ message: "Error retrieving packages", error: err });
+      });
+  };
+
+
+// Disable package
+const disable_package = async (req, res) => {
+    const { packageId } = req.params;
+    try {
+        const package = await Package.findById(packageId);
+        if (package) {
+            package.disabled = true;
+            await package.save();
+            res.status(200).send(`Package ${package.name} has been disabled`);
+        } else {
+            res.status(404).send('Package not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+// Enable package
+const enable_package = async (req, res) => {
+    const { packageId } = req.params;
+    try {
+        const package = await Package.findById(packageId);
+        if (package) {
+            package.disabled = false;
+            await package.save();
+            res.status(200).send(`Package ${package.name} has been enabled`);
+        } else {
+            res.status(404).send('Package not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package };
 

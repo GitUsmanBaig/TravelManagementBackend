@@ -22,6 +22,7 @@ const packageSchema = new mongoose.Schema({
     ref: "TravelAgency",
     required: true,
   },
+   disabled: { type: Boolean, default: false },
 });
 
 const model = mongoose.model("Package", packageSchema);
