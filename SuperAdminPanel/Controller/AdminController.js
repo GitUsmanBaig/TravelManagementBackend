@@ -158,5 +158,30 @@ const enable_package = async (req, res) => {
 };
 
 
-module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package };
+// Update Package
+const update_Package = async (req, res) => {
+    const { packageId } = req.params;
+    const updates = req.body;
+
+    try {
+        const package = await Package.findById(packageId);
+        if (!package) {
+            return res.status(404).send('Package not found');
+        }
+
+        // Iterate over the keys in the request body and update the package
+        Object.keys(updates).forEach(key => {
+            package[key] = updates[key];
+        });
+
+        await package.save();
+        res.status(200).send(`Package ${package.name} has been updated`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+
+module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package, update_Package };
 

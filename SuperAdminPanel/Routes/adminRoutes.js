@@ -25,5 +25,8 @@ router.put('/disable_package/:packageId', authenticate_admin, adminController.di
 //enable package
 router.put('/enable_package/:packageId', authenticate_admin, adminController.enable_package);
 
+//update package
+router.put('/update_package/:packageId', authenticate_admin, adminController.update_Package);
+
 module.exports = router;
 
