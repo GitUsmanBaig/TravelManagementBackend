@@ -11,13 +11,20 @@ app.use(express.json());
 
 // Routes Imports
 const TravelAgencyRouter = require("./TravelAgencyPanel/Routes/TravelAgencyRoutes");
+<<<<<<< HEAD
 const SuperAdminRouter = require("./SuperAdminPanel/Routes/adminRoutes");
 
+=======
+const TravellerPanelRouter = require("./TravellerPanel/Routes/userRoutes");
+>>>>>>> f9bc65c64df9440d1bf0d643789fe64fc90ad04e
 
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
 //superAdmin Routes
 app.use("/api/super-admin", SuperAdminRouter);
+
+//Traveller Panel Routes
+app.use("/user", TravellerPanelRouter);
 
 // Database connection
 mongoose
