@@ -11,9 +11,13 @@ app.use(express.json());
 
 // Routes Imports
 const TravelAgencyRouter = require("./TravelAgencyPanel/Routes/TravelAgencyRoutes");
+const TravellerPanelRouter = require("./TravellerPanel/Routes/userRoutes");
 
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
+
+//Traveller Panel Routes
+app.use("/user", TravellerPanelRouter);
 
 // Database connection
 mongoose
