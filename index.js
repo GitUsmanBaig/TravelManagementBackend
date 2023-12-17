@@ -12,6 +12,8 @@ app.use(express.json());
 // Routes Imports
 const TravelAgencyRouter = require("./TravelAgencyPanel/Routes/TravelAgencyRoutes");
 const PackageRouter = require("./TravelAgencyPanel/Routes/PackagesRoutes");
+const TravellerPanelRouter = require("./TravellerPanel/Routes/userRoutes");
+const SuperAdminRouter = require("./SuperAdminPanel/Routes/adminRoutes");
 
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
@@ -21,6 +23,11 @@ app.use("/api/package", PackageRouter);
 // const { addHotel } = require("./dummyData");
 // app.post("/api/addHotel", addHotel);
 // //
+//superAdmin Routes
+app.use("/api/super-admin", SuperAdminRouter);
+
+//Traveller Panel Routes
+app.use("/user", TravellerPanelRouter);
 
 // Database connection
 mongoose

@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const userProfileSchema = new Schema({
+const AdminProfileSchema = new Schema({
     name: String,
     email: String,
     password: String,
     CNIC: String,
     contact: String,
-    preferences: [String],
     disabled: Boolean,
+
 });
 
-const UserProfile = mongoose.model('UserProfile', userProfileSchema);
-module.exports = UserProfile;
+const AdminProfile = mongoose.model('AdminProfile', AdminProfileSchema);
+module.exports = AdminProfile;
