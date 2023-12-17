@@ -23,4 +23,6 @@ router.put('/confirmationPackage/:id', authenticate_user, userController.confirm
 
 router.put('/cancelBooking/:id', authenticate_user, userController.cancelBooking);
 
+router.put('/updateBooking/:id', authenticate_user, userController.updateBooking);
+
 module.exports = router;

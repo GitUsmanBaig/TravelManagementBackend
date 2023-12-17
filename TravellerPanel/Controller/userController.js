@@ -121,7 +121,7 @@ const bookPackage = async (req, res) => {
             endDate: package.endDate,
             packageId: packageId,
             customerId: userId,
-            totalAmount: package.totalAmount,
+            totalAmount: package.totalAmount * noOfPersons,
             bookingDate: Date.now(),
             confirmationCode
         });
@@ -179,7 +179,7 @@ const confirmationPackage = async (req, res) => {
 
 const cancelBooking = async (req, res) => {
     const bookingId = req.params.id;
-    try{
+    try {
         const booking = await Booking.findById(bookingId);
         if (!booking) return res.status(404).send('Booking not found');
         const package = await Package.findById(booking.packageId);
@@ -196,14 +196,47 @@ const cancelBooking = async (req, res) => {
         else deduction = 0.5;
         package.noOfPersons += booking.noOfPersons;
         package.totalAmount -= booking.totalAmount * deduction;
-        
+
         console.log(package.totalAmount);
 
         await Booking.findByIdAndDelete(bookingId);
         res.status(200).send('Booking cancelled successfully');
 
     }
-    catch(err){
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const updateBooking = async (req, res) => {
+    const { id } = req.params;
+    const { noOfPersons } = req.body;
+    const { token } = req.body;
+    try {
+        const booking = await Booking.findById(id);
+        if (!booking) return res.status(404).send('Booking not found');
+        if (booking.confirmationCode !== token) return res.status(422).send('Invalid confirmation code');
+        const package = await Package.findById(booking.packageId);
+        if (!package) return res.status(404).send('Package not found');
+        if (noOfPersons < 0) return res.status(422).send('Number of persons cannot be negative');
+        if (noOfPersons === 0) return res.status(422).send('Number of persons cannot be zero');
+        if (noOfPersons === booking.noOfPersons) return res.status(422).send('Number of persons cannot be same');
+        if (noOfPersons < booking.noOfPersons) {
+            const diff = booking.noOfPersons - noOfPersons;
+            package.noOfPersons += diff;
+            package.totalAmount -= diff * package.totalAmount;
+        }
+        else {
+            const diff = noOfPersons - booking.noOfPersons;
+            package.noOfPersons -= diff;
+            package.totalAmount += diff * package.totalAmount;
+        }
+        booking.noOfPersons = noOfPersons;
+        await booking.save();
+        await package.save();
+        res.status(200).send('Number of persons updated successfully');
+    }
+    catch (err) {
         res.status(500).send(err.message);
     }
 };
@@ -217,5 +250,6 @@ module.exports = {
     getAllPackages,
     bookPackage,
     confirmationPackage,
-    cancelBooking
+    cancelBooking,
+    updateBooking
 };
