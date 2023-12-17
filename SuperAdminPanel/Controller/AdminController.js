@@ -4,6 +4,7 @@ const SECRET_KEY = "mysecretkey";
 const nodemailer = require('nodemailer');
 const User = require('../../TravellerPanel/Schema/userProfile.js');
 const Package = require("../../Schemas/Package.schema");
+const TravelAgency = require("../../Schemas/TravelAgency.schema");
 
 
 //signup admin
@@ -75,12 +76,31 @@ const forgot_password = async (req, res) => {
 
 // Disable user
 const disable_user = async (req, res) => {
-    const { userId } = req.params; 
+    const { userId } = req.params;
     try {
         const user = await User.findById(userId);
         if (user) {
-            user.disabled = true; 
+            user.disabled = true;
             await user.save();
+
+            // Assuming User schema has an 'email' field
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                port: 587,
+                auth: {
+                    user: 'piper.gulgowski61@ethereal.email',
+                    pass: '8fD3yCgVMyhHek1T62'
+                }
+            });
+
+            await transporter.sendMail({
+                from: '"Admin" <admin@example.com>',
+                to: user.email,
+                subject: "Account Disabled Notification",
+                text: `Your account has been disabled.`,
+                html: `<b>Your account has been disabled.</b>`
+            });
+
             res.status(200).send(`User ${user.name} has been disabled`);
         } else {
             res.status(404).send('User not found');
@@ -90,14 +110,34 @@ const disable_user = async (req, res) => {
     }
 };
 
-//enable user
+
+// Enable user
 const enable_user = async (req, res) => {
-    const { userId } = req.params; 
+    const { userId } = req.params;
     try {
         const user = await User.findById(userId);
         if (user) {
-            user.disabled = false; 
+            user.disabled = false;
             await user.save();
+
+            // Assuming User schema has an 'email' field
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                port: 587,
+                auth: {
+                    user: 'piper.gulgowski61@ethereal.email',
+                    pass: '8fD3yCgVMyhHek1T62'
+                }
+            });
+
+            await transporter.sendMail({
+                from: '"Admin" <admin@example.com>',
+                to: user.email,
+                subject: "Account Enabled Notification",
+                text: `Your account has been enabled.`,
+                html: `<b>Your account has been enabled.</b>`
+            });
+
             res.status(200).send(`User ${user.name} has been enabled`);
         } else {
             res.status(404).send('User not found');
@@ -105,7 +145,8 @@ const enable_user = async (req, res) => {
     } catch (err) {
         res.status(500).send(err.message);
     }
-}; 
+};
+ 
 
 
 const getAllPackages = async (req, res) => {
@@ -127,10 +168,31 @@ const getAllPackages = async (req, res) => {
 const disable_package = async (req, res) => {
     const { packageId } = req.params;
     try {
-        const package = await Package.findById(packageId);
+        const package = await Package.findById(packageId).populate('travelAgency');
         if (package) {
             package.disabled = true;
             await package.save();
+
+            // Assuming the TravelAgency schema has an 'email' field
+            if (package.travelAgency && package.travelAgency.email) {
+                const transporter = nodemailer.createTransport({
+                    host: 'smtp.ethereal.email',
+                    port: 587,
+                    auth: {
+                        user: 'piper.gulgowski61@ethereal.email',
+                        pass: '8fD3yCgVMyhHek1T62'
+                    }
+                });
+
+                await transporter.sendMail({
+                    from: '"Admin" <admin@example.com>',
+                    to: package.travelAgency.email,
+                    subject: "Package Disabled Notification",
+                    text: `The package ${package.name} has been disabled.`,
+                    html: `<b>The package ${package.name} has been disabled.</b>`
+                });
+            }
+
             res.status(200).send(`Package ${package.name} has been disabled`);
         } else {
             res.status(404).send('Package not found');
@@ -140,14 +202,36 @@ const disable_package = async (req, res) => {
     }
 };
 
+
 // Enable package
 const enable_package = async (req, res) => {
     const { packageId } = req.params;
     try {
-        const package = await Package.findById(packageId);
+        const package = await Package.findById(packageId).populate('travelAgency');
         if (package) {
             package.disabled = false;
             await package.save();
+
+            // Assuming the TravelAgency schema has an 'email' field
+            if (package.travelAgency && package.travelAgency.email) {
+                const transporter = nodemailer.createTransport({
+                    host: 'smtp.ethereal.email',
+                    port: 587,
+                    auth: {
+                        user: 'piper.gulgowski61@ethereal.email',
+                        pass: '8fD3yCgVMyhHek1T62'
+                    }
+                });
+
+                await transporter.sendMail({
+                    from: '"Admin" <admin@example.com>',
+                    to: package.travelAgency.email,
+                    subject: "Package Enabled Notification",
+                    text: `The package ${package.name} has been enabled.`,
+                    html: `<b>The package ${package.name} has been enabled.</b>`
+                });
+            }
+
             res.status(200).send(`Package ${package.name} has been enabled`);
         } else {
             res.status(404).send('Package not found');
@@ -158,5 +242,31 @@ const enable_package = async (req, res) => {
 };
 
 
-module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package };
+
+// Update Package
+const update_Package = async (req, res) => {
+    const { packageId } = req.params;
+    const updates = req.body;
+
+    try {
+        const package = await Package.findById(packageId);
+        if (!package) {
+            return res.status(404).send('Package not found');
+        }
+
+        // Iterate over the keys in the request body and update the package
+        Object.keys(updates).forEach(key => {
+            package[key] = updates[key];
+        });
+
+        await package.save();
+        res.status(200).send(`Package ${package.name} has been updated`);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+
+module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package, update_Package };
 
