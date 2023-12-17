@@ -18,8 +18,9 @@ const login_user = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email });
-        if(user.disabled) return res.status(401).send('Your account has been disabled by the admin');
-        if (user && password === user.password) {
+        if (user.disabled) return res.status(401).send('Your account has been disabled by the admin');
+
+        else if (user && password === user.password && !user.disabled) {
             const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1d' });
             res.cookie('auth_token', token);
             res.status(200).send(`Login Successful ${user.name}`);
