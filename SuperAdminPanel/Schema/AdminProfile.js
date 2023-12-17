@@ -7,6 +7,8 @@ const AdminProfileSchema = new Schema({
     password: String,
     CNIC: String,
     contact: String,
+    disabled: Boolean,
+
 });
 
 const AdminProfile = mongoose.model('AdminProfile', AdminProfileSchema);

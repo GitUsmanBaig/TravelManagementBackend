@@ -7,7 +7,8 @@ const userProfileSchema = new Schema({
     password: String,
     CNIC: String,
     contact: String,
-    preferences: [String]
+    preferences: [String],
+    disabled: Boolean,
 });
 
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);

@@ -8,5 +8,13 @@ router.post('/signup_admin', adminController.signup_admin);
 
 router.post('/login_admin', adminController.login_admin);
 
+router.post('/forgot_password', adminController.forgot_password);
+
+//disable user
+router.put('/disable_user/:userId', authenticate_admin, adminController.disable_user);
+
+//enable user
+router.put('/enable_user/:userId', authenticate_admin, adminController.enable_user);
+
 module.exports = router;
 
