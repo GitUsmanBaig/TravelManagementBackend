@@ -10,6 +10,9 @@ router.post('/login_admin', adminController.login_admin);
 
 router.post('/forgot_password', adminController.forgot_password);
 
+//get all users
+router.get('/getAllUsers', authenticate_admin, adminController.get_all_users);
+
 //disable user
 router.put('/disable_user/:userId', authenticate_admin, adminController.disable_user);
 
@@ -33,6 +36,9 @@ router.get('/view_trend', authenticate_admin, adminController.view_trend);
 
 //view user trends
 router.get('/view_user_trend', authenticate_admin, adminController.view_user_trends);
+
+//get all travel agencies
+router.get('/getAllTravelAgencies', authenticate_admin, adminController.get_all_travelagencies);
 
 module.exports = router;
 

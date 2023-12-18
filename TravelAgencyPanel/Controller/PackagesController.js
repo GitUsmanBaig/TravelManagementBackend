@@ -2,45 +2,48 @@ const Package = require("../../Schemas/Package.schema");
 
 const createPackage = async (req, res) => {
   const {
-    name,
-    description,
-    price,
-    noOfPersons,
-    startDate,
-    endDate,
-    isActive,
-    imageUrl,
-    otherImages,
-    hotel,
-    travelAgency,
-    city,
-    totalAmount,
-    packageCategory
+      name,
+      description,
+      price,
+      noOfPersons,
+      startDate,
+      endDate,
+      isActive,
+      imageUrl,
+      otherImages,
+      hotel,
+      travelAgency,
+      city,
+      totalAmount,
+      packageCategory
   } = req.body;
 
-  Package.create({
-    name,
-    description,
-    price,
-    noOfPersons,
-    startDate,
-    endDate,
-    isActive,
-    imageUrl,
-    otherImages,
-    hotel,
-    travelAgency,
-    city,
-    disabled: false,
-    totalAmount,
-    packageCategory,
-  })
-    .then(data => {
-      res.status(201).send({ message: "Package created successfully", data });
-    })
-    .catch(err => {
+  try {
+      const newPackage = await Package.create({
+          name,
+          description,
+          price,
+          noOfPersons,
+          startDate,
+          endDate,
+          isActive,
+          imageUrl,
+          otherImages,
+          hotel,
+          travelAgency,
+          city,
+          totalAmount,
+          packageCategory,
+          disabled: false // Assuming default value for disabled
+      });
+
+      // Increment noOfPackages for the associated TravelAgency
+      await TravelAgency.findByIdAndUpdate(travelAgency, { $inc: { noOfPackages: 1 } });
+
+      res.status(201).send({ message: "Package created successfully", data: newPackage });
+  } catch (err) {
       res.status(500).send({ message: "Error creating package", error: err });
-    });
+  }
 };
 
 const getAllPackages = async (req, res) => {
@@ -115,13 +118,21 @@ const updatePackageById = async (req, res) => {
 const deletePackageById = async (req, res) => {
   const { id } = req.params;
 
-  Package.findByIdAndDelete(id)
-    .then(data => {
-      res.status(200).send({ message: "Package deleted successfully", data });
-    })
-    .catch(err => {
+  try {
+      const packageToDelete = await Package.findById(id);
+      if (!packageToDelete) {
+          return res.status(404).send({ message: "Package not found" });
+      }
+
+      await Package.findByIdAndDelete(id);
+
+      // Decrement noOfPackages for the associated TravelAgency
+      await TravelAgency.findByIdAndUpdate(packageToDelete.travelAgency, { $inc: { noOfPackages: -1 } });
+
+      res.status(200).send({ message: "Package deleted successfully" });
+  } catch (err) {
       res.status(500).send({ message: "Error deleting package", error: err });
-    });
+  }
 };
 
 module.exports = {

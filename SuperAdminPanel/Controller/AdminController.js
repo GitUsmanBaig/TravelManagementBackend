@@ -73,6 +73,19 @@ const forgot_password = async (req, res) => {
     }
 };
 
+//get all users
+const get_all_users = async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.status(200).send({
+            message: "Users retrieved successfully",
+            data: users
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving users", error: err });
+    }
+
+}
 
 // Disable user
 const disable_user = async (req, res) => {
@@ -303,5 +316,20 @@ const view_user_trends = async (req, res) => {
     }
 };
 
-module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package, enable_package, update_Package, view_trend, view_user_trends };
+
+//get all TravleAgencies
+const get_all_travelagencies = async (req, res) => {
+    try {
+        const travelagencies = await TravelAgency.find({});
+        res.status(200).send({
+            message: "Travel Agencies retrieved successfully",
+            data: travelagencies
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving travel agencies", error: err });
+    }
+
+}
+
+module.exports = { signup_admin, login_admin, forgot_password,get_all_users, disable_user, enable_user, getAllPackages, disable_package, enable_package, update_Package, view_trend, view_user_trends,get_all_travelagencies };
 

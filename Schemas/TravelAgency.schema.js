@@ -6,6 +6,7 @@ const travelAgencySchema = new mongoose.Schema({
   helplineNumber: { type: String, required: true },
   logoUrl: { type: String, required: true },
   userFeedback: [{ type: String }],
+  noOfPackages: { type: Number, default: 0 },
 });
 
 const model = mongoose.model("TravelAgency", travelAgencySchema);
