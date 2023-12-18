@@ -5,7 +5,10 @@ const travelAgencySchema = new mongoose.Schema({
   email: { type: String, required: true },
   helplineNumber: { type: String, required: true },
   logoUrl: { type: String, required: true },
-  userFeedback: [{ type: String }],
+  userFeedback: [{ 
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
+    type: String 
+  }],
   noOfPackages: { type: Number, default: 0 },
 });
 

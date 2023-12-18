@@ -127,7 +127,8 @@ const bookPackage = async (req, res) => {
             customerId: userId,
             totalAmount: package.totalAmount * noOfPersons,
             bookingDate: Date.now(),
-            confirmationCode
+            confirmationCode,
+            category: package.packageCategory
         });
 
         package.noOfPersons -= noOfPersons;
@@ -198,7 +199,9 @@ const confirmationPackage = async (req, res) => {
                 travelAgency: TravelAgency.name,
                 //travelAgencyhelplineNumber: TravelAgency.helplineNumber
             });
+            console.log(package.counttotalbookings);
             package.counttotalbookings += 1;
+            console.log(package.counttotalbookings);
             await package.save();
             await booking.save();
             await bookingHistory.save();
@@ -232,11 +235,14 @@ const cancelBooking = async (req, res) => {
         //take 90% of the amount if cancelled on the same day
         package.noOfPersons += booking.noOfPersons;
 
-        amountreturned = package.totalAmount - booking.totalAmount * deduction;
+        amountreturned = booking.totalAmount * deduction;
+        finalamount = booking.totalAmount - amountreturned;
 
+        console.log(package.counttotalbookings);
         package.counttotalbookings -= 1;
+        console.log(package.counttotalbookings);
 
-        console.log(amountreturned);
+        console.log(finalamount);
 
         await Booking.findByIdAndDelete(bookingId);
         await package.save();
