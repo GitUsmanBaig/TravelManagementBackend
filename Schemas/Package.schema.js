@@ -28,6 +28,11 @@ const packageSchema = new mongoose.Schema({
   reviews: [{ type: String }],
   avgRating: { type: Number },
   counttotalbookings: { type: Number, default: 0 },
+  packageCategory: {
+    type: String,
+    enum: ["Adventure", "Family", "Honeymoon", "Religious", "Wildlife", "Group", "Solo", "Friends","Summer","Winter","Spring","Autumn"],
+    default: 'Family'
+  },
 });
 
 const model = mongoose.model("Package", packageSchema);

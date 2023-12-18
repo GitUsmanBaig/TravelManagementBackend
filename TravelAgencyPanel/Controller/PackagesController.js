@@ -15,6 +15,7 @@ const createPackage = async (req, res) => {
     travelAgency,
     city,
     totalAmount,
+    packageCategory
   } = req.body;
 
   Package.create({
@@ -32,6 +33,7 @@ const createPackage = async (req, res) => {
     city,
     disabled: false,
     totalAmount,
+    packageCategory,
   })
     .then(data => {
       res.status(201).send({ message: "Package created successfully", data });

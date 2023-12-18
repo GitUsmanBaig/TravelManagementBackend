@@ -31,5 +31,8 @@ router.put('/update_package/:packageId', authenticate_admin, adminController.upd
 //view trend
 router.get('/view_trend', authenticate_admin, adminController.view_trend);
 
+//view user trends
+router.get('/view_user_trend', authenticate_admin, adminController.view_user_trends);
+
 module.exports = router;
 

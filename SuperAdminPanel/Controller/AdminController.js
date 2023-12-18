@@ -22,18 +22,18 @@ const signup_admin = async (req, res) => {
 //login admin
 const login_admin = async (req, res) => {
     const { email, password } = req.body;
-    try{
-        const admin  = await Admin.findOne({email});
-        if(admin && password === admin.password){
-            const token = jwt.sign({id: admin._id}, SECRET_KEY, {expiresIn: '1d'});
+    try {
+        const admin = await Admin.findOne({ email });
+        if (admin && password === admin.password) {
+            const token = jwt.sign({ id: admin._id }, SECRET_KEY, { expiresIn: '1d' });
             res.cookie('auth_token', token);
             res.status(200).send(`Login Successful ${admin.name}`);
         }
-        else{
+        else {
             res.status(401).send('Invalid email or password');
         }
     }
-    catch(err){
+    catch (err) {
         res.status(500).send(err.message);
     }
 }
@@ -146,22 +146,22 @@ const enable_user = async (req, res) => {
         res.status(500).send(err.message);
     }
 };
- 
+
 
 
 const getAllPackages = async (req, res) => {
     Package.find({})
-      .then(data => {
-        res
-          .status(200)
-          .send({ message: "Packages retrieved successfully", data });
-      })
-      .catch(err => {
-        res
-          .status(500)
-          .send({ message: "Error retrieving packages", error: err });
-      });
-  };
+        .then(data => {
+            res
+                .status(200)
+                .send({ message: "Packages retrieved successfully", data });
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .send({ message: "Error retrieving packages", error: err });
+        });
+};
 
 
 // Disable package
@@ -280,5 +280,28 @@ const view_trend = async (req, res) => {
 };
 
 
-module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package, update_Package, view_trend };
+//user trends
+const view_user_trends = async (req, res) => {
+    try {
+        const categoryTrends = await Package.aggregate([
+            {
+                $group: {
+                    _id: "$packageCategory",
+                    totalBookings: { $sum: "$counttotalbookings" }
+                }
+            },
+            { $sort: { totalBookings: -1 } },
+            { $limit: 5 }
+        ]);
+
+        res.status(200).send({
+            message: "Top 5 popular package categories retrieved successfully",
+            data: categoryTrends
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving top package category trends", error: err });
+    }
+};
+
+module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package, enable_package, update_Package, view_trend, view_user_trends };
 
