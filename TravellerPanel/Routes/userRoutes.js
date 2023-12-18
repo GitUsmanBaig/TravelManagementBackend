@@ -37,4 +37,6 @@ router.put('/addReview/:id', authenticate_user, userController.addReview);
 
 router.post('/addComplaint/:id', authenticate_user, userController.sendFeedback);
 
+router.get('/getAllBookingHistory', authenticate_user, userController.getBookingHistory);
+
 module.exports = router;

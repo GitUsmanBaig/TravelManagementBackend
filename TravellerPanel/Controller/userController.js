@@ -5,6 +5,8 @@ const nodemailer = require('nodemailer');
 const Package = require("../../Schemas/Package.schema");
 const Booking = require("../../Schemas/Booking.schema");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
+const BookingHistory = require("../Schema/bookingHistory");
+const Hotel = require('../../Schemas/Hotel.schema');
 
 const signup_user = async (req, res) => {
     const { name, email, password, CNIC, contact, preferences } = req.body;
@@ -115,6 +117,7 @@ const bookPackage = async (req, res) => {
         const checkBooking = await Booking.findOne({ customerId: userId, packageId: packageId });
         if (checkBooking) return res.status(422).send('You have already booked this package');
         const user = await User.findById(userId);
+        if (!user) return res.status(404).send('User not found');
         const confirmationCode = randomNumberGenerator();
         const booking = new Booking({
             noOfPersons,
@@ -126,6 +129,7 @@ const bookPackage = async (req, res) => {
             bookingDate: Date.now(),
             confirmationCode
         });
+
         package.noOfPersons -= noOfPersons;
 
         const transporter = nodemailer.createTransport({
@@ -162,13 +166,40 @@ const randomNumberGenerator = () => {
 const confirmationPackage = async (req, res) => {
     const bookingId = req.params.id; // Assuming you pass the booking ID in URL params
     const { token } = req.body;
+    const userId = req.user.id;
+
     try {
         const booking = await Booking.findById(bookingId);
         if (!booking) return res.status(404).send('Booking not found');
 
+        const package = await Package.findById(booking.packageId);
+        if (!package) return res.status(404).send('Package not found');
+
+        const travelAgency = await TravelAgency.findById(package.travelAgency); // Changed the variable name to 'travelAgency'
+        if (!travelAgency) return res.status(404).send('Travel Agency not found');
+
+        const hotel = await Hotel.findById(package.hotel);
+        if (!hotel) return res.status(404).send('Hotel not found');
+
         if (booking.confirmationCode === token) {
             booking.status = 'confirmed';
+            const bookingHistory = new BookingHistory({
+                customerId: userId,
+                bookingDate: Date.now(),
+                noOfPersons: booking.noOfPersons,
+                startDate: package.startDate,
+                endDate: package.endDate,
+                totalAmount: package.totalAmount * booking.noOfPersons,
+                name: package.name,
+                description: package.description,
+                price: package.price,
+                city: package.city,
+                hotel: hotel.name,
+                travelAgency: TravelAgency.name,
+                //travelAgencyhelplineNumber: TravelAgency.helplineNumber
+            });
             await booking.save();
+            await bookingHistory.save();
             res.status(200).send('Booking confirmed');
         } else {
             res.status(422).send('Invalid confirmation code');
@@ -190,17 +221,20 @@ const cancelBooking = async (req, res) => {
         const diff = Date.now() - booking.bookingDate;
         const hours = Math.ceil(diff / (1000 * 60 * 60));
         let deduction = 0;
-        if (hours <= 24) deduction = 0.1;
+        if (Date.now() <= booking.startDate) deduction = 0.9;
+        else if (hours <= 24) deduction = 0.1;
         else if (hours <= 48) deduction = 0.2;
         else if (hours <= 72) deduction = 0.3;
         else if (hours <= 96) deduction = 0.4;
-        else deduction = 0.5;
+        else if (hours <= 120) deduction = 0.5;
+        //take 90% of the amount if cancelled on the same day
         package.noOfPersons += booking.noOfPersons;
         package.totalAmount -= booking.totalAmount * deduction;
 
         console.log(package.totalAmount);
 
         await Booking.findByIdAndDelete(bookingId);
+
         res.status(200).send('Booking cancelled successfully');
 
     }
@@ -344,6 +378,16 @@ const sendFeedback = async (req, res) => {
     }
 };
 
+const getBookingHistory = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const bookingHistory = await BookingHistory.find({ customerId: userId });
+        res.status(200).send(bookingHistory);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
 module.exports = {
     signup_user,
     login_user,
@@ -360,5 +404,6 @@ module.exports = {
     getPackageById,
     addRating,
     addReview,
-    sendFeedback
+    sendFeedback,
+    getBookingHistory
 };

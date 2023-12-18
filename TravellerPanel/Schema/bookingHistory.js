@@ -2,9 +2,23 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const bookingHistorySchema = new Schema({
-    reservations: [String],
-    travelPackages: [String],
-    flights: [String]
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Customer",
+        required: true,
+    },
+    bookingDate: { type: Date, default: Date.now },
+    noOfPersons: { type: Number, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    totalAmount: { type: Number, required: true },
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    price: { type: Number, required: true },
+    city: { type: String, required: true },
+    hotel: {type: String, required: true},
+    travelAgency: {type: String, required: true},
+    //travelAgencyhelplineNumber: {type: String, required: true},
 });
 
 const BookingHistory = mongoose.model('BookingHistory', bookingHistorySchema);
