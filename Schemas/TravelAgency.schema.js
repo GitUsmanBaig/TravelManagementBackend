@@ -7,7 +7,7 @@ const travelAgencySchema = new mongoose.Schema({
   logoUrl: { type: String, required: true },
   userFeedback: [{ 
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", required: true },
-    type: String 
+    feedback: String 
   }],
   noOfPackages: { type: Number, default: 0 },
 });

@@ -376,12 +376,16 @@ const sendFeedback = async (req, res) => {
         if (!user) return res.status(404).send('User not found');
         const travelAgency = await TravelAgency.findById(package.travelAgency);
         if (!travelAgency) return res.status(404).send('Travel Agency not found');
+        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
+        const feedbackObject = {
+            customerId: userId,
+            feedback: feedbacktoadd
+        };
         //add user name and user email to feedback
         //if (Date.now() < booking.endDate) return res.status(422).send('You cannot send feedback before the end date');
         //push user name, email and feedback to travel agency
-        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
         console.log(feedbacktoadd);
-        travelAgency.userFeedback.push(feedbacktoadd);
+        travelAgency.userFeedback.push(feedbackObject);
         await travelAgency.save();
         res.status(200).send('Feedback sent successfully');
     }
