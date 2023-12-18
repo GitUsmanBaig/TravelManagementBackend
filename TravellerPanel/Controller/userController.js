@@ -394,6 +394,34 @@ const sendFeedback = async (req, res) => {
     }
 };
 
+const getFeedbacksSent = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const travelAgencies = await TravelAgency.find();
+        const feedbacksSent = travelAgencies
+            .flatMap(agency => agency.userFeedback)
+            .filter(feedback => feedback.customerId.toString() === userId);
+
+        res.status(200).send(feedbacksSent);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+const getFeedbacksReceived = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).send('User not found');
+        res.status(200).send(user.responses);
+    }
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
 const getBookingHistory = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -421,5 +449,7 @@ module.exports = {
     addRating,
     addReview,
     sendFeedback,
-    getBookingHistory
+    getBookingHistory,
+    getFeedbacksSent,
+    getFeedbacksReceived
 };
