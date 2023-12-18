@@ -198,6 +198,8 @@ const confirmationPackage = async (req, res) => {
                 travelAgency: TravelAgency.name,
                 //travelAgencyhelplineNumber: TravelAgency.helplineNumber
             });
+            package.counttotalbookings += 1;
+            await package.save();
             await booking.save();
             await bookingHistory.save();
             res.status(200).send('Booking confirmed');
@@ -221,7 +223,7 @@ const cancelBooking = async (req, res) => {
         const diff = Date.now() - booking.bookingDate;
         const hours = Math.ceil(diff / (1000 * 60 * 60));
         let deduction = 0;
-        if (Date.now() <= booking.startDate) deduction = 0.9;
+        if (Date.now() === booking.startDate) deduction = 0.9;
         else if (hours <= 24) deduction = 0.1;
         else if (hours <= 48) deduction = 0.2;
         else if (hours <= 72) deduction = 0.3;
@@ -229,11 +231,15 @@ const cancelBooking = async (req, res) => {
         else if (hours <= 120) deduction = 0.5;
         //take 90% of the amount if cancelled on the same day
         package.noOfPersons += booking.noOfPersons;
-        package.totalAmount -= booking.totalAmount * deduction;
 
-        console.log(package.totalAmount);
+        amountreturned = package.totalAmount - booking.totalAmount * deduction;
+
+        package.counttotalbookings -= 1;
+
+        console.log(amountreturned);
 
         await Booking.findByIdAndDelete(bookingId);
+        await package.save();
 
         res.status(200).send('Booking cancelled successfully');
 
