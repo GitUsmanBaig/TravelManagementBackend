@@ -127,7 +127,8 @@ const bookPackage = async (req, res) => {
             customerId: userId,
             totalAmount: package.totalAmount * noOfPersons,
             bookingDate: Date.now(),
-            confirmationCode
+            confirmationCode,
+            category: package.packageCategory
         });
 
         package.noOfPersons -= noOfPersons;
@@ -198,7 +199,9 @@ const confirmationPackage = async (req, res) => {
                 travelAgency: TravelAgency.name,
                 //travelAgencyhelplineNumber: TravelAgency.helplineNumber
             });
+            console.log(package.counttotalbookings);
             package.counttotalbookings += 1;
+            console.log(package.counttotalbookings);
             await package.save();
             await booking.save();
             await bookingHistory.save();
@@ -232,11 +235,14 @@ const cancelBooking = async (req, res) => {
         //take 90% of the amount if cancelled on the same day
         package.noOfPersons += booking.noOfPersons;
 
-        amountreturned = package.totalAmount - booking.totalAmount * deduction;
+        amountreturned = booking.totalAmount * deduction;
+        finalamount = booking.totalAmount - amountreturned;
 
+        console.log(package.counttotalbookings);
         package.counttotalbookings -= 1;
+        console.log(package.counttotalbookings);
 
-        console.log(amountreturned);
+        console.log(finalamount);
 
         await Booking.findByIdAndDelete(bookingId);
         await package.save();
@@ -370,12 +376,16 @@ const sendFeedback = async (req, res) => {
         if (!user) return res.status(404).send('User not found');
         const travelAgency = await TravelAgency.findById(package.travelAgency);
         if (!travelAgency) return res.status(404).send('Travel Agency not found');
+        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
+        const feedbackObject = {
+            customerId: userId,
+            feedback: feedbacktoadd
+        };
         //add user name and user email to feedback
         //if (Date.now() < booking.endDate) return res.status(422).send('You cannot send feedback before the end date');
         //push user name, email and feedback to travel agency
-        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
         console.log(feedbacktoadd);
-        travelAgency.userFeedback.push(feedbacktoadd);
+        travelAgency.userFeedback.push(feedbackObject);
         await travelAgency.save();
         res.status(200).send('Feedback sent successfully');
     }

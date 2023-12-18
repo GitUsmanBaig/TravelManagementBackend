@@ -22,6 +22,7 @@ const bookingSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
   totalAmount: { type: Number, required: true },
   confirmationCode: { type: String, required: true },
+  category:{type:String,required:true},
 });
 
 const model = mongoose.model("Booking", bookingSchema);
