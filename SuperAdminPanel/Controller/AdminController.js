@@ -267,6 +267,18 @@ const update_Package = async (req, res) => {
 };
 
 
+const view_trend = async (req, res) => {
+    try {
+        const topPackages = await Package.find({}).sort({ counttotalbookings: -1 }).limit(5);
+        res.status(200).send({
+            message: "Top 5 most booked packages retrieved successfully",
+            data: topPackages
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving top booked packages", error: err });
+    }
+};
 
-module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package, update_Package };
+
+module.exports = { signup_admin, login_admin, forgot_password, disable_user, enable_user, getAllPackages, disable_package,enable_package, update_Package, view_trend };
 

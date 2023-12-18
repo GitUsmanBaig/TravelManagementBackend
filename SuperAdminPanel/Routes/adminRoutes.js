@@ -28,5 +28,8 @@ router.put('/enable_package/:packageId', authenticate_admin, adminController.ena
 //update package
 router.put('/update_package/:packageId', authenticate_admin, adminController.update_Package);
 
+//view trend
+router.get('/view_trend', authenticate_admin, adminController.view_trend);
+
 module.exports = router;
 
