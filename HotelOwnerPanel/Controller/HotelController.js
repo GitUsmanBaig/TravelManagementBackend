@@ -1,4 +1,4 @@
-const Hotel = require('../Schema/Hotel.schema');
+const Hotel = require('D:/BS(SE)/Semester 5/Web Engineering/Project/TravelManagementBackend/Schemas/Hotel.schema.js');
 
 const HotelController = {
     listProperties: async (req, res) => {
