@@ -9,6 +9,7 @@ const userProfileSchema = new Schema({
     contact: String,
     preferences: [String],
     disabled: Boolean,
+    responses: [String],
 });
 
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);

@@ -127,7 +127,8 @@ const bookPackage = async (req, res) => {
             customerId: userId,
             totalAmount: package.totalAmount * noOfPersons,
             bookingDate: Date.now(),
-            confirmationCode
+            confirmationCode,
+            category: package.packageCategory
         });
 
         package.noOfPersons -= noOfPersons;
@@ -198,6 +199,10 @@ const confirmationPackage = async (req, res) => {
                 travelAgency: TravelAgency.name,
                 //travelAgencyhelplineNumber: TravelAgency.helplineNumber
             });
+            console.log(package.counttotalbookings);
+            package.counttotalbookings += 1;
+            console.log(package.counttotalbookings);
+            await package.save();
             await booking.save();
             await bookingHistory.save();
             res.status(200).send('Booking confirmed');
@@ -221,7 +226,7 @@ const cancelBooking = async (req, res) => {
         const diff = Date.now() - booking.bookingDate;
         const hours = Math.ceil(diff / (1000 * 60 * 60));
         let deduction = 0;
-        if (Date.now() <= booking.startDate) deduction = 0.9;
+        if (Date.now() === booking.startDate) deduction = 0.9;
         else if (hours <= 24) deduction = 0.1;
         else if (hours <= 48) deduction = 0.2;
         else if (hours <= 72) deduction = 0.3;
@@ -229,11 +234,18 @@ const cancelBooking = async (req, res) => {
         else if (hours <= 120) deduction = 0.5;
         //take 90% of the amount if cancelled on the same day
         package.noOfPersons += booking.noOfPersons;
-        package.totalAmount -= booking.totalAmount * deduction;
 
-        console.log(package.totalAmount);
+        amountreturned = booking.totalAmount * deduction;
+        finalamount = booking.totalAmount - amountreturned;
+
+        console.log(package.counttotalbookings);
+        package.counttotalbookings -= 1;
+        console.log(package.counttotalbookings);
+
+        console.log(finalamount);
 
         await Booking.findByIdAndDelete(bookingId);
+        await package.save();
 
         res.status(200).send('Booking cancelled successfully');
 
@@ -364,12 +376,16 @@ const sendFeedback = async (req, res) => {
         if (!user) return res.status(404).send('User not found');
         const travelAgency = await TravelAgency.findById(package.travelAgency);
         if (!travelAgency) return res.status(404).send('Travel Agency not found');
+        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
+        const feedbackObject = {
+            customerId: userId,
+            feedback: feedbacktoadd
+        };
         //add user name and user email to feedback
         //if (Date.now() < booking.endDate) return res.status(422).send('You cannot send feedback before the end date');
         //push user name, email and feedback to travel agency
-        const feedbacktoadd = `${user.name}: ${user.email}: ${feedback}`;
         console.log(feedbacktoadd);
-        travelAgency.userFeedback.push(feedbacktoadd);
+        travelAgency.userFeedback.push(feedbackObject);
         await travelAgency.save();
         res.status(200).send('Feedback sent successfully');
     }
@@ -377,6 +393,34 @@ const sendFeedback = async (req, res) => {
         res.status(500).send(err.message);
     }
 };
+
+const getFeedbacksSent = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const travelAgencies = await TravelAgency.find();
+        const feedbacksSent = travelAgencies
+            .flatMap(agency => agency.userFeedback)
+            .filter(feedback => feedback.customerId.toString() === userId);
+
+        res.status(200).send(feedbacksSent);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+const getFeedbacksReceived = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).send('User not found');
+        res.status(200).send(user.responses);
+    }
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+}
 
 const getBookingHistory = async (req, res) => {
     const userId = req.user.id;
@@ -405,5 +449,7 @@ module.exports = {
     addRating,
     addReview,
     sendFeedback,
-    getBookingHistory
+    getBookingHistory,
+    getFeedbacksSent,
+    getFeedbacksReceived
 };
