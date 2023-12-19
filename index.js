@@ -14,28 +14,35 @@ const TravelAgencyRouter = require("./TravelAgencyPanel/Routes/TravelAgencyRoute
 const PackageRouter = require("./TravelAgencyPanel/Routes/PackagesRoutes");
 const TravellerPanelRouter = require("./TravellerPanel/Routes/userRoutes");
 const SuperAdminRouter = require("./SuperAdminPanel/Routes/adminRoutes");
+const HotelOwnerRouter = require("./HotelOwnerPanel/Routes/hotelRoutes");           // Import Hotel Owner routes
+const ReservationRouter = require("./HotelOwnerPanel/Routes/reservationRoutes");   // Import Reservation routes
+const ReviewRouter = require("./HotelOwnerPanel/Routes/reviewRoutes");             // Import Review routes
+const loginRouter = require('./HotelOwnerPanel/Routes/loginRoutes');
 
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
 app.use("/api/package", PackageRouter);
 
-// // temp
-// const { addHotel } = require("./dummyData");
-// app.post("/api/addHotel", addHotel);
-// //
-//superAdmin Routes
+// Super Admin Routes
 app.use("/api/super-admin", SuperAdminRouter);
 
-//Traveller Panel Routes
+// Traveller Panel Routes
 app.use("/user", TravellerPanelRouter);
+
+// Hotel Owner Panel Routes
+app.use("/api/hotel-owner/login", loginRouter);
+app.use("/api/hotel-owner", HotelOwnerRouter);        // Use Hotel Owner routes
+app.use("/api/reservation", ReservationRouter);       // Use Reservation routes
+app.use("/api/review", ReviewRouter);                 // Use Review routes
 
 // Database connection
 mongoose
   .connect(
-    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
+    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`,
+    { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.log("Error", err));
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000; // Default to 3000 if PORT is not in .env
 app.listen(port, () => console.log(`Server listening on port ${port}`));

@@ -1,6 +1,8 @@
 const express = require('express');
 const { authenticateHotelOwner } = require('../Middleware/authMiddleware');
 const HotelController = require('../Controller/HotelController');
+const InquiryController = require('../Controller/InquiryController');
+
 
 const router = express.Router();
 
