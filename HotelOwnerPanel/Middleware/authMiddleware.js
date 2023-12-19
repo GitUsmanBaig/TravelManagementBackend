@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const HotelOwner = require('../Schema/HotelOwnerProfile'); 
+const HotelOwner = require('D:/BS(SE)/Semester 5/Web Engineering/Project/TravelManagementBackend/Schemas/HotelOwnerProfile.schema'); 
 const SECRET_KEY = process.env.SECRET_KEY; //for JWT (in .env file)
 
 const authenticateHotelOwner = async (req, res, next) => {

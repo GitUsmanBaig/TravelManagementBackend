@@ -1,5 +1,5 @@
 const Review = require('../Schema/Review.schema');
-const Hotel = require('D:/BS(SE)/Semester 5/Web Engineering/Project/TravelManagementBackend/Schemas/Hotel.schema.js');
+const Hotel = require('D:/BS(SE)/Semester 5/Web Engineering/Project/TravelManagementBackend/Schemas/Hotel.schema');
 
 const ReviewController = {
     getAllReviewsForOwner: async (req, res) => {
