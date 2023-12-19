@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const hotelSchema = new mongoose.Schema({
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'HotelOwnerProfile', // Reference to the HotelOwnerProfile schema
+    required: true
+  },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   rating: { type: Number, required: true },
@@ -11,6 +16,6 @@ const hotelSchema = new mongoose.Schema({
   spaceAvailable: { type: Number, required: true },
 });
 
-const model = mongoose.model("Hotel", hotelSchema);
+const Hotel = mongoose.model("Hotel", hotelSchema);
 
-module.exports = model;
+module.exports = Hotel;
