@@ -30,7 +30,7 @@ app.use("/api/super-admin", SuperAdminRouter);
 app.use("/user", TravellerPanelRouter);
 
 // Hotel Owner Panel Routes
-app.use("/api/hotel-owner/login", loginRouter);
+app.use("/api/hotel-owner", loginRouter);             // Use login routes
 app.use("/api/hotel-owner", HotelOwnerRouter);        // Use Hotel Owner routes
 app.use("/api/reservation", ReservationRouter);       // Use Reservation routes
 app.use("/api/review", ReviewRouter);                 // Use Review routes
