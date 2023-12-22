@@ -1,4 +1,5 @@
 const {
+  loginTravelAgency,
   createTravelAgency,
   getAllTravelAgencies,
   getTravelAgencyById,
@@ -9,6 +10,7 @@ const {
 const express = require("express");
 const router = express.Router();
 
+router.post("/login", loginTravelAgency);
 router.post("/", createTravelAgency);
 router.get("/", getAllTravelAgencies);
 router.get("/:id", getTravelAgencyById);
