@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
 
 const loginTravelAgency = async (req, res) => {
@@ -5,8 +6,9 @@ const loginTravelAgency = async (req, res) => {
 
   TravelAgency.findOne({ email, password })
     .then(data => {
+      let token = null;
       if (data) {
-        let token = jwt.sign(
+        token = jwt.sign(
           {
             id: data._id,
             name: data.name,
@@ -72,11 +74,10 @@ const getTravelAgencyById = async (req, res) => {
 };
 
 const updateTravelAgency = async (req, res) => {
-  const { id } = req.params;
   const { name, email, helplineNumber, logoUrl } = req.body;
 
   TravelAgency.findByIdAndUpdate(
-    id,
+    req.body.signedInAgency.id,
     { name, email, helplineNumber, logoUrl },
     { new: true }
   )
@@ -93,9 +94,7 @@ const updateTravelAgency = async (req, res) => {
 };
 
 const deleteTravelAgency = async (req, res) => {
-  const { id } = req.params;
-
-  TravelAgency.findByIdAndDelete(id)
+  TravelAgency.findByIdAndDelete(req.body.signedInAgency.id)
     .then(data => {
       res
         .status(200)

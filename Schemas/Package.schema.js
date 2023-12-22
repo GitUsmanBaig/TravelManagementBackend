@@ -3,9 +3,7 @@ const mongoose = require("mongoose");
 const packageSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
-  price: { type: Number, required: true },
   city: { type: String, required: true },
-  noOfPersons: { type: Number, required: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   isActive: { type: Boolean, default: true },
@@ -30,8 +28,21 @@ const packageSchema = new mongoose.Schema({
   counttotalbookings: { type: Number, default: 0 },
   packageCategory: {
     type: String,
-    enum: ["Adventure", "Family", "Honeymoon", "Religious", "Wildlife", "Group", "Solo", "Friends","Summer","Winter","Spring","Autumn"],
-    default: 'Family'
+    enum: [
+      "Adventure",
+      "Family",
+      "Honeymoon",
+      "Religious",
+      "Wildlife",
+      "Group",
+      "Solo",
+      "Friends",
+      "Summer",
+      "Winter",
+      "Spring",
+      "Autumn",
+    ],
+    default: "Family",
   },
 });
 

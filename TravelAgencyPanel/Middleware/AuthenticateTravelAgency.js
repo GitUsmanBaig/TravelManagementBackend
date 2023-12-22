@@ -24,8 +24,8 @@ let AuthenticateTravelAgency = async (req, res, next) => {
           if (id && name && email) {
             req.body.signedInAgency = {};
             req.body.signedInAgency.id = id;
-            req.body.signedInAgency.name = name;
-            req.body.signedInAgency.email = email;
+            // req.body.signedInAgency.name = name;
+            // req.body.signedInAgency.email = email;
             next();
           } else {
             res.status(404).json({ Message: "Your Are Not Authenticated" });
