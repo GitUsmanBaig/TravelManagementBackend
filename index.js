@@ -14,10 +14,10 @@ const TravelAgencyRouter = require("./TravelAgencyPanel/Routes/TravelAgencyRoute
 const PackageRouter = require("./TravelAgencyPanel/Routes/PackagesRoutes");
 const TravellerPanelRouter = require("./TravellerPanel/Routes/userRoutes");
 const SuperAdminRouter = require("./SuperAdminPanel/Routes/adminRoutes");
-const HotelOwnerRouter = require("./HotelOwnerPanel/Routes/hotelRoutes");           // Import Hotel Owner routes
-const ReservationRouter = require("./HotelOwnerPanel/Routes/reservationRoutes");   // Import Reservation routes
-const ReviewRouter = require("./HotelOwnerPanel/Routes/reviewRoutes");             // Import Review routes
-const loginRouter = require('./HotelOwnerPanel/Routes/loginRoutes');
+const HotelOwnerRouter = require("./HotelOwnerPanel/Routes/hotelRoutes"); // Import Hotel Owner routes
+const ReservationRouter = require("./HotelOwnerPanel/Routes/reservationRoutes"); // Import Reservation routes
+const ReviewRouter = require("./HotelOwnerPanel/Routes/reviewRoutes"); // Import Review routes
+const loginRouter = require("./HotelOwnerPanel/Routes/loginRoutes");
 
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
@@ -30,16 +30,15 @@ app.use("/api/super-admin", SuperAdminRouter);
 app.use("/user", TravellerPanelRouter);
 
 // Hotel Owner Panel Routes
-app.use("/api/hotel-owner", loginRouter);             // Use login routes
-app.use("/api/hotel-owner", HotelOwnerRouter);        // Use Hotel Owner routes
-app.use("/api/reservation", ReservationRouter);       // Use Reservation routes
-app.use("/api/review", ReviewRouter);                 // Use Review routes
+app.use("/api/hotel-owner", loginRouter); // Use login routes
+app.use("/api/hotel-owner", HotelOwnerRouter); // Use Hotel Owner routes
+app.use("/api/reservation", ReservationRouter); // Use Reservation routes
+app.use("/api/review", ReviewRouter); // Use Review routes
 
 // Database connection
 mongoose
   .connect(
-    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`,
-    { useNewUrlParser: true, useUnifiedTopology: true }
+    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`
   )
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.log("Error", err));

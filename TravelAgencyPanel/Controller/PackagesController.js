@@ -1,9 +1,27 @@
 const Package = require("../../Schemas/Package.schema");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
 
-
 const createPackage = async (req, res) => {
   const {
+    name,
+    description,
+    price,
+    noOfPersons,
+    startDate,
+    endDate,
+    isActive,
+    imageUrl,
+    otherImages,
+    hotel,
+    city,
+    totalAmount,
+    packageCategory,
+  } = req.body;
+
+  const travelAgency = req.body.signedInAgency.id;
+
+  try {
+    const newPackage = await Package.create({
       name,
       description,
       price,
@@ -17,34 +35,20 @@ const createPackage = async (req, res) => {
       travelAgency,
       city,
       totalAmount,
-      packageCategory
-  } = req.body;
+      packageCategory,
+      disabled: false, // Assuming default value for disabled
+    });
 
-  try {
-      const newPackage = await Package.create({
-          name,
-          description,
-          price,
-          noOfPersons,
-          startDate,
-          endDate,
-          isActive,
-          imageUrl,
-          otherImages,
-          hotel,
-          travelAgency,
-          city,
-          totalAmount,
-          packageCategory,
-          disabled: false // Assuming default value for disabled
-      });
+    // Increment noOfPackages for the associated TravelAgency
+    await TravelAgency.findByIdAndUpdate(travelAgency, {
+      $inc: { noOfPackages: 1 },
+    });
 
-      // Increment noOfPackages for the associated TravelAgency
-      await TravelAgency.findByIdAndUpdate(travelAgency, { $inc: { noOfPackages: 1 } });
-
-      res.status(201).send({ message: "Package created successfully", data: newPackage });
+    res
+      .status(201)
+      .send({ message: "Package created successfully", data: newPackage });
   } catch (err) {
-      res.status(500).send({ message: "Error creating package", error: err });
+    res.status(500).send({ message: "Error creating package", error: err });
   }
 };
 
@@ -87,9 +91,10 @@ const updatePackageById = async (req, res) => {
     imageUrl,
     otherImages,
     hotel,
-    travelAgency,
     city,
   } = req.body;
+
+  const travelAgency = req.body.signedInAgency.id;
 
   Package.findByIdAndUpdate(
     id,
@@ -121,19 +126,21 @@ const deletePackageById = async (req, res) => {
   const { id } = req.params;
 
   try {
-      const packageToDelete = await Package.findById(id);
-      if (!packageToDelete) {
-          return res.status(404).send({ message: "Package not found" });
-      }
+    const packageToDelete = await Package.findById(id);
+    if (!packageToDelete) {
+      return res.status(404).send({ message: "Package not found" });
+    }
 
-      await Package.findByIdAndDelete(id);
+    await Package.findByIdAndDelete(id);
 
-      // Decrement noOfPackages for the associated TravelAgency
-      await TravelAgency.findByIdAndUpdate(packageToDelete.travelAgency, { $inc: { noOfPackages: -1 } });
+    // Decrement noOfPackages for the associated TravelAgency
+    await TravelAgency.findByIdAndUpdate(packageToDelete.travelAgency, {
+      $inc: { noOfPackages: -1 },
+    });
 
-      res.status(200).send({ message: "Package deleted successfully" });
+    res.status(200).send({ message: "Package deleted successfully" });
   } catch (err) {
-      res.status(500).send({ message: "Error deleting package", error: err });
+    res.status(500).send({ message: "Error deleting package", error: err });
   }
 };
 

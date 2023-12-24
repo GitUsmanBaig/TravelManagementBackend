@@ -1,18 +1,45 @@
+const jwt = require("jsonwebtoken");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
 
-const createTravelAgency = async (req, res) => {
-  const { name, email, helplineNumber, logoUrl } = req.body;
+const loginTravelAgency = async (req, res) => {
+  const { email, password } = req.body;
 
-  TravelAgency.create({ name, email, helplineNumber, logoUrl })
+  TravelAgency.findOne({ email, password })
+    .then(data => {
+      let token = null;
+      if (data) {
+        token = jwt.sign(
+          {
+            id: data._id,
+            name: data.name,
+            email: data.email,
+          },
+          "Secret to be replaced later"
+        );
+      }
+      res
+        .status(200)
+        .json({ message: "Login successfull", token, id: data._id });
+    })
+    .catch(err => {
+      res.status(400).json({ message: "Travel Agency not found" });
+    });
+};
+
+const createTravelAgency = async (req, res) => {
+  const { name, email, password, helplineNumber, logoUrl } = req.body;
+
+  TravelAgency.create({ name, email, password, helplineNumber, logoUrl })
     .then(data => {
       res
         .status(201)
-        .send({ message: "Travel agency created successfully", data });
+        .send({ message: "Travel agency creation request added", data });
     })
     .catch(err => {
-      res
-        .status(500)
-        .send({ message: "Error creating travel agency", error: err });
+      res.status(500).send({
+        message: "Error adding requestion for creation fo Travel Agency",
+        error: err,
+      });
     });
 };
 
@@ -47,11 +74,10 @@ const getTravelAgencyById = async (req, res) => {
 };
 
 const updateTravelAgency = async (req, res) => {
-  const { id } = req.params;
   const { name, email, helplineNumber, logoUrl } = req.body;
 
   TravelAgency.findByIdAndUpdate(
-    id,
+    req.body.signedInAgency.id,
     { name, email, helplineNumber, logoUrl },
     { new: true }
   )
@@ -68,9 +94,7 @@ const updateTravelAgency = async (req, res) => {
 };
 
 const deleteTravelAgency = async (req, res) => {
-  const { id } = req.params;
-
-  TravelAgency.findByIdAndDelete(id)
+  TravelAgency.findByIdAndDelete(req.body.signedInAgency.id)
     .then(data => {
       res
         .status(200)
@@ -84,6 +108,7 @@ const deleteTravelAgency = async (req, res) => {
 };
 
 module.exports = {
+  loginTravelAgency,
   createTravelAgency,
   getAllTravelAgencies,
   getTravelAgencyById,
