@@ -27,12 +27,24 @@ const login_user = async (req, res) => {
 
         else if (user && password === user.password && !user.disabled) {
             const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: '1d' });
-            res.cookie('auth_token', token);
-            res.status(200).send(`Login Successful ${user.name}`);
+            res.cookie('auth_token', token, { httpOnly: true }); // Setting the cookie
+            // console.log('JWT Token:', token); // Logging the token
+            res.status(200).json({ message: `Login Successful ${user.name}`, token });
         } else {
             res.status(401).send('Invalid email or password');
         }
     } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+const getProfile = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const user=await User.findById(userId);
+        res.status(200).send(user);
+    }
+    catch (err) {
         res.status(500).send(err.message);
     }
 };
@@ -98,13 +110,23 @@ const getAllPackages = async (req, res) => {
         .then(data => {
             res
                 .status(200)
-                .send({ message: "Packages retrieved successfully", data });
+                .json({ message: "Packages retrieved successfully", data });
         })
         .catch(err => {
             res
                 .status(500)
                 .send({ message: "Error retrieving packages", error: err });
         });
+};
+
+const getHotelbyID = async (req, res) => {
+    const hotelId = req.params.id;
+    try {
+        const hotel = await Hotel.findById(hotelId);
+        res.status(200).send(hotel);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 };
 
 const bookPackage = async (req, res) => {
@@ -165,12 +187,12 @@ const randomNumberGenerator = () => {
 };
 
 const confirmationPackage = async (req, res) => {
-    const bookingId = req.params.id; // Assuming you pass the booking ID in URL params
+    const packageId = req.params.id;
     const { token } = req.body;
     const userId = req.user.id;
 
     try {
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findOne({ customerId: userId, packageId: packageId });
         if (!booking) return res.status(404).send('Booking not found');
 
         const package = await Package.findById(booking.packageId);
@@ -184,27 +206,27 @@ const confirmationPackage = async (req, res) => {
 
         if (booking.confirmationCode === token) {
             booking.status = 'confirmed';
-            const bookingHistory = new BookingHistory({
-                customerId: userId,
-                bookingDate: Date.now(),
-                noOfPersons: booking.noOfPersons,
-                startDate: package.startDate,
-                endDate: package.endDate,
-                totalAmount: package.totalAmount * booking.noOfPersons,
-                name: package.name,
-                description: package.description,
-                price: package.price,
-                city: package.city,
-                hotel: hotel.name,
-                travelAgency: TravelAgency.name,
-                //travelAgencyhelplineNumber: TravelAgency.helplineNumber
-            });
+            // const bookingHistory = new BookingHistory({
+            //     customerId: userId,
+            //     bookingDate: Date.now(),
+            //     noOfPersons: booking.noOfPersons,
+            //     startDate: package.startDate,
+            //     endDate: package.endDate,
+            //     totalAmount: package.totalAmount * booking.noOfPersons,
+            //     name: package.name,
+            //     description: package.description,
+            //     price: package.price,
+            //     city: package.city,
+            //     hotel: hotel.name,
+            //     travelAgency: TravelAgency.name,
+            //     //travelAgencyhelplineNumber: TravelAgency.helplineNumber
+            // });
             console.log(package.counttotalbookings);
             package.counttotalbookings += 1;
             console.log(package.counttotalbookings);
             await package.save();
             await booking.save();
-            await bookingHistory.save();
+            // await bookingHistory.save();
             res.status(200).send('Booking confirmed');
         } else {
             res.status(422).send('Invalid confirmation code');
@@ -451,5 +473,7 @@ module.exports = {
     sendFeedback,
     getBookingHistory,
     getFeedbacksSent,
-    getFeedbacksReceived
+    getFeedbacksReceived,
+    getHotelbyID,
+    getProfile
 };

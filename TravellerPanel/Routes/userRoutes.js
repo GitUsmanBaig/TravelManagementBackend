@@ -15,6 +15,8 @@ router.get('/logout_user', authenticate_user, userController.logout_user);
 
 router.post('/customize_profile', authenticate_user, userController.customize_profile);
 
+router.get('/getProfile', authenticate_user, userController.getProfile);
+
 router.get('/getAllPackages', authenticate_user, userController.getAllPackages);
 
 router.put('/bookPackage/:id', authenticate_user, userController.bookPackage);
@@ -42,5 +44,7 @@ router.get('/getAllBookingHistory', authenticate_user, userController.getBooking
 router.get('/getFeedbacksSent', authenticate_user, userController.getFeedbacksSent);
 
 router.get('/getFeedbacksReceived', authenticate_user, userController.getFeedbacksReceived);
+
+router.get('/getHotelofPackage/:id', authenticate_user, userController.getHotelbyID);
 
 module.exports = router;
