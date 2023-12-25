@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
+const cloudinary = require("../../cloudinary");
 
 const loginTravelAgency = async (req, res) => {
   const { email, password } = req.body;
@@ -27,7 +28,30 @@ const loginTravelAgency = async (req, res) => {
 };
 
 const createTravelAgency = async (req, res) => {
-  const { name, email, password, helplineNumber, logoUrl } = req.body;
+  const { name, email, password, helplineNumber, image } = req.body;
+
+  let logoUrl = null;
+  // Cloudinary Uplaod
+  try {
+    logoUrl = await cloudinary.uploader.upload(
+      image,
+      {
+        upload_preset: "TravelAgencyManagement",
+        public_id: `${email}_logo`,
+        folder: "TravelAgency",
+        allowed_formats: ["jpg", "png", "jpeg", "svg", "ico", "webp", "jfif"],
+      },
+      function (error, result) {
+        if (error) console.log(error);
+        //console.log(result);
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ message: "Error uploading image", error });
+  }
+
+  if (logoUrl) logoUrl = logoUrl.secure_url;
+  else res.status(500).json({ message: "Error uploading image" });
 
   TravelAgency.create({ name, email, password, helplineNumber, logoUrl })
     .then(data => {
@@ -36,6 +60,7 @@ const createTravelAgency = async (req, res) => {
         .send({ message: "Travel agency creation request added", data });
     })
     .catch(err => {
+      console.log(err);
       res.status(500).send({
         message: "Error adding requestion for creation fo Travel Agency",
         error: err,
