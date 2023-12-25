@@ -19,6 +19,16 @@ const signup_user = async (req, res) => {
     }
 };
 
+const getTravelAgency = async (req, res) => {
+    try {
+        const travelAgency = await TravelAgency.find();
+        res.status(200).send(travelAgency);
+    }
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
 const login_user = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -41,7 +51,7 @@ const login_user = async (req, res) => {
 const getProfile = async (req, res) => {
     const userId = req.user.id;
     try {
-        const user=await User.findById(userId);
+        const user = await User.findById(userId);
         res.status(200).send(user);
     }
     catch (err) {
@@ -265,11 +275,13 @@ const cancelBooking = async (req, res) => {
         console.log(package.counttotalbookings);
 
         console.log(finalamount);
+        user.bookingamount = finalamount;
 
         await Booking.findByIdAndDelete(bookingId);
         await package.save();
+        await user.save();
 
-        res.status(200).send('Booking cancelled successfully');
+        res.status(200).send(user);
 
     }
     catch (err) {
@@ -475,5 +487,6 @@ module.exports = {
     getFeedbacksSent,
     getFeedbacksReceived,
     getHotelbyID,
-    getProfile
+    getProfile,
+    getTravelAgency
 };

@@ -10,6 +10,7 @@ const userProfileSchema = new Schema({
     preferences: [String],
     disabled: Boolean,
     responses: [String],
+    bookingamount: { type: Number, default: 0 },
 });
 
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);
