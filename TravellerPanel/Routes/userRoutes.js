@@ -47,6 +47,6 @@ router.get('/getFeedbacksReceived', authenticate_user, userController.getFeedbac
 
 router.get('/getHotelofPackage/:id', authenticate_user, userController.getHotelbyID);
 
-router.get('/getTravelAgency', authenticate_user, userController.getTravelAgency);
+router.get('/getTravelAgency', authenticate_user, userController.getTravelAgency);//to remove
 
 module.exports = router;

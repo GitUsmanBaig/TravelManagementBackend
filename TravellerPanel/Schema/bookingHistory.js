@@ -7,6 +7,11 @@ const bookingHistorySchema = new Schema({
         ref: "Customer",
         required: true,
     },
+    bookingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Booking",
+        required: true,
+    },
     bookingDate: { type: Date, default: Date.now },
     noOfPersons: { type: Number, required: true },
     startDate: { type: Date, required: true },

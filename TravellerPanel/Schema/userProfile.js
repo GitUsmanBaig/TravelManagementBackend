@@ -4,12 +4,13 @@ const Schema = mongoose.Schema;
 const userProfileSchema = new Schema({
     name: String,
     email: String,
-    password: String,
+    password: String,  
     CNIC: String,
     contact: String,
     preferences: [String],
     disabled: Boolean,
     responses: [String],
+    responceCount: { type: Number, default: 0 },
     bookingamount: { type: Number, default: 0 },
 });
 

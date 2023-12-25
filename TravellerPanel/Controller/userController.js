@@ -84,7 +84,7 @@ const forgot_password = async (req, res) => {
             });
 
             console.log("Message sent: %s", info.messageId);
-            res.status(200).send(`Password sent to ${user.email}`);
+            res.status(200).json(`Password sent to ${user.email}`);
         } else {
             res.status(401).send('Invalid email or password');
         }
@@ -216,27 +216,28 @@ const confirmationPackage = async (req, res) => {
 
         if (booking.confirmationCode === token) {
             booking.status = 'confirmed';
-            // const bookingHistory = new BookingHistory({
-            //     customerId: userId,
-            //     bookingDate: Date.now(),
-            //     noOfPersons: booking.noOfPersons,
-            //     startDate: package.startDate,
-            //     endDate: package.endDate,
-            //     totalAmount: package.totalAmount * booking.noOfPersons,
-            //     name: package.name,
-            //     description: package.description,
-            //     price: package.price,
-            //     city: package.city,
-            //     hotel: hotel.name,
-            //     travelAgency: TravelAgency.name,
-            //     //travelAgencyhelplineNumber: TravelAgency.helplineNumber
-            // });
+            const bookingHistory = new BookingHistory({
+                customerId: userId,
+                bookingDate: Date.now(),
+                noOfPersons: booking.noOfPersons,
+                startDate: package.startDate,
+                endDate: package.endDate,
+                totalAmount: booking.totalAmount,
+                name: package.name,
+                description: package.description,
+                price: package.totalAmount,
+                city: package.city,
+                hotel: hotel.name,
+                travelAgency: TravelAgency.name,
+                bookingId: booking._id
+                //travelAgencyhelplineNumber: TravelAgency.helplineNumber
+            });
             console.log(package.counttotalbookings);
             package.counttotalbookings += 1;
             console.log(package.counttotalbookings);
             await package.save();
             await booking.save();
-            // await bookingHistory.save();
+            await bookingHistory.save();
             res.status(200).send('Booking confirmed');
         } else {
             res.status(422).send('Invalid confirmation code');
@@ -354,10 +355,11 @@ const getPackageById = async (req, res) => {
 
 const addRating = async (req, res) => {
     const { rating } = req.body;
-    const bookingId = req.params.id;
     const userId = req.user.id;
+    const bookingHistoryID = req.params.id;
+
     try {
-        const booking = await Booking.findOne({ customerId: userId, _id: bookingId });
+        const booking = await Booking.findOne({ bookingId: bookingHistoryID.bookingId });
         if (!booking) return res.status(422).send('You have not booked this package');
         const package = await Package.findById(booking.packageId);
         if (!package) return res.status(404).send('Package not found');
@@ -370,7 +372,7 @@ const addRating = async (req, res) => {
         });
         package.avgRating = sum / package.ratings.length;
         await package.save();
-        res.status(200).send('Rating added successfully');
+        res.status(200).json('Rating added successfully');
     } catch (err) {
         res.status(500).send(err.message);
     }
@@ -378,10 +380,11 @@ const addRating = async (req, res) => {
 
 const addReview = async (req, res) => {
     const { review } = req.body;
-    const bookingId = req.params.id;
     const userId = req.user.id;
+    const bookingHistoryID = req.params.id;
+
     try {
-        const booking = await Booking.findOne({ customerId: userId, _id: bookingId });
+        const booking = await Booking.findOne({ bookingId: bookingHistoryID.bookingId });
         if (!booking) return res.status(422).send('You have not booked this package');
         const package = await Package.findById(booking.packageId);
         if (!package) return res.status(404).send('Package not found');
@@ -390,7 +393,7 @@ const addReview = async (req, res) => {
         const reviewtoadd = `${user.name}: ${review}`;
         package.reviews.push(reviewtoadd);
         await package.save();
-        res.status(200).send('Review added successfully');
+        res.status(200).json('Review added successfully');
     }
     catch (err) {
         res.status(500).send(err.message);
@@ -400,9 +403,10 @@ const addReview = async (req, res) => {
 const sendFeedback = async (req, res) => {
     const { feedback } = req.body;
     const userId = req.user.id;
-    const bookingId = req.params.id;
+    const bookingHistoryID = req.params.id;
+
     try {
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findOne({ bookingId: bookingHistoryID.bookingId });
         if (!booking) return res.status(404).send('Booking not found');
         const package = await Package.findById(booking.packageId);
         if (!package) return res.status(404).send('Package not found');
@@ -421,7 +425,7 @@ const sendFeedback = async (req, res) => {
         console.log(feedbacktoadd);
         travelAgency.userFeedback.push(feedbackObject);
         await travelAgency.save();
-        res.status(200).send('Feedback sent successfully');
+        res.status(200).json('Feedback sent successfully');
     }
     catch (err) {
         res.status(500).send(err.message);
@@ -449,6 +453,11 @@ const getFeedbacksReceived = async (req, res) => {
     try {
         const user = await User.findById(userId);
         if (!user) return res.status(404).send('User not found');
+        //count how many responses are there in User
+        user.responses.forEach(response => {
+            user.responceCount++;
+        });
+
         res.status(200).send(user.responses);
     }
     catch (err) {
