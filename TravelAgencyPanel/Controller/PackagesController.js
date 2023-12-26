@@ -54,6 +54,8 @@ const createPackage = async (req, res) => {
 
 const getAllPackages = async (req, res) => {
   Package.find({})
+    .populate("hotel", "name")
+    .populate("travelAgency", "name")
     .then(data => {
       if (data) {
         res
@@ -74,6 +76,8 @@ const getPackageById = async (req, res) => {
   const { id } = req.params;
 
   Package.findById(id)
+    .populate("hotel", "name")
+    .populate("travelAgency", "name")
     .then(data => {
       if (data) {
         res

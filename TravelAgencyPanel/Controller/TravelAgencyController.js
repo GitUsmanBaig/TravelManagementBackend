@@ -112,6 +112,7 @@ const getTravelAgencyPackagesById = async (req, res) => {
   const { id } = req.params;
 
   Package.find({ travelAgency: id })
+    .populate("hotel", "name")
     .then(data => {
       if (data) {
         res
