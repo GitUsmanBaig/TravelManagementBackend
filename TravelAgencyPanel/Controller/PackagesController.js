@@ -1,5 +1,6 @@
 const Package = require("../../Schemas/Package.schema");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
+const cloudinary = require("../../cloudinary");
 
 const createPackage = async (req, res) => {
   const {
@@ -10,15 +11,43 @@ const createPackage = async (req, res) => {
     startDate,
     endDate,
     isActive,
-    imageUrl,
-    otherFacilites,
+    image,
+    //otherFacilites,
     hotel,
     city,
     totalAmount,
     packageCategory,
   } = req.body;
 
+  //console.log(hotel);
+  const otherFacilites = req.body.otherFacilites.split(",");
+
   const travelAgency = req.body.signedInAgency.id;
+
+  let imageUrl = null;
+  // Cloudinary Uplaod
+  try {
+    imageUrl = await cloudinary.uploader.upload(
+      image,
+      {
+        upload_preset: "TravelAgencyManagement",
+        public_id: `${name}+${city}+${travelAgency}_logo`,
+        folder: "Packages",
+        allowed_formats: ["jpg", "png", "jpeg", "svg", "ico", "webp", "jfif"],
+      },
+      function (error, result) {
+        if (error) console.log(error);
+        //console.log(result);
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error uploading image", error });
+    return;
+  }
+
+  if (imageUrl) imageUrl = imageUrl.secure_url;
+  //else res.status(500).json({ message: "Error uploading image" });
 
   try {
     const newPackage = await Package.create({
@@ -48,6 +77,7 @@ const createPackage = async (req, res) => {
       .status(201)
       .send({ message: "Package created successfully", data: newPackage });
   } catch (err) {
+    console.log(err);
     res.status(500).send({ message: "Error creating package", error: err });
   }
 };
