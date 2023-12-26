@@ -1,3 +1,4 @@
+const UserProfile = require('../../TravellerPanel/Schema/userProfile');
 const Review = require("../Schema/Review.schema");
 const Hotel = require("../../Schemas/Hotel.schema");
 //const Hotel = require("D:/BS(SE)/Semester 5/Web Engineering/Project/TravelManagementBackend/Schemas/Hotel.schema");

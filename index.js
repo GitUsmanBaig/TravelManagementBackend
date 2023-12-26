@@ -27,7 +27,7 @@ const SuperAdminRouter = require("./SuperAdminPanel/Routes/adminRoutes");
 const HotelOwnerRouter = require("./HotelOwnerPanel/Routes/hotelRoutes"); // Import Hotel Owner routes
 const ReservationRouter = require("./HotelOwnerPanel/Routes/reservationRoutes"); // Import Reservation routes
 const ReviewRouter = require("./HotelOwnerPanel/Routes/reviewRoutes"); // Import Review routes
-const loginRouter = require("./HotelOwnerPanel/Routes/loginRoutes");
+const authRoutes = require("./HotelOwnerPanel/Routes/authRoutes");
 
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
@@ -40,7 +40,7 @@ app.use("/api/super-admin", SuperAdminRouter);
 app.use("/user", TravellerPanelRouter);
 
 // Hotel Owner Panel Routes
-app.use("/api/hotel-owner", loginRouter); // Use login routes
+app.use("/api/hotel-owner/auth", authRoutes); // Use authentication routes
 app.use("/api/hotel-owner", HotelOwnerRouter); // Use Hotel Owner routes
 app.use("/api/reservation", ReservationRouter); // Use Reservation routes
 app.use("/api/review", ReviewRouter); // Use Review routes
