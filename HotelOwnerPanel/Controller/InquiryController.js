@@ -1,6 +1,6 @@
 const Inquiry = require('../Schema/Inquiry.schema');
 const Hotel = require('../../Schemas/Hotel.schema');
-const Customer = require('../../Schemas/Customer.schema');
+const UserProfile = require('../../TravellerPanel/Schema/userProfile');
 
 const InquiryController = {
     getInquiriesForHotel: async (req, res) => {
