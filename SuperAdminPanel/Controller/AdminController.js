@@ -26,7 +26,7 @@ const login_admin = async (req, res) => {
         const admin = await Admin.findOne({ email });
         if (admin && password === admin.password) {
             const token = jwt.sign({ id: admin._id }, SECRET_KEY, { expiresIn: '1d' });
-            res.cookie('auth_token', token,  { httpOnly: true });
+            res.cookie('auth_token', token, { httpOnly: true });
             console.log(token);
             res.status(200).json(`Login Successful ${admin.name}`);
         }
@@ -305,8 +305,8 @@ const getAllRatings = async (req, res) => {
     try {
         const packages = await Package.find({}).lean();
         const packagesWithAvgRating = packages.map(pkg => {
-            const avgRating = pkg.ratings.length > 0 
-                ? pkg.ratings.reduce((sum, rating) => sum + rating, 0) / pkg.ratings.length 
+            const avgRating = pkg.ratings.length > 0
+                ? pkg.ratings.reduce((sum, rating) => sum + rating, 0) / pkg.ratings.length
                 : 0;
             return {
                 name: pkg.name,
@@ -377,6 +377,25 @@ const get_all_travelagencies = async (req, res) => {
 
 }
 
+//get travel agency byID
+const get_travelagency_byID = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const travelagency = await TravelAgency.findById(agencyId);
+        if (travelagency) {
+            res.status(200).send({
+                message: "Travel Agency retrieved successfully",
+                data: travelagency
+            });
+        } else {
+            res.status(404).send('Travel Agency not found');
+        }
+    }
+    catch (err) {
+        res.status(500).send({ message: "Error retrieving travel agency", error: err });
+    }
+}
+
 
 //get all feedbacks
 const get_all_feedbacks = async (req, res) => {
@@ -415,7 +434,7 @@ const replyToFeedback = async (req, res) => {
     try {
         // Find the feedback and the associated travel agency
         const agency = await TravelAgency.findOne({ "userFeedback._id": feedbackId }, { 'userFeedback.$': 1 }).populate('userFeedback.customerId');
-        
+
         if (!agency || !agency.userFeedback || agency.userFeedback.length === 0) {
             return res.status(404).send({ message: "Feedback not found" });
         }
@@ -492,8 +511,72 @@ const count_total_travelagencies = async (req, res) => {
     }
 };
 
+// Disable agency
+const disable_agency = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        if (agency) {
+            agency.disabled = true;
+            await agency.save();
+            res.status(200).send(`Agency ${agency.name} has been disabled`);
+        } else {
+            res.status(404).send('Agency not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+// Enable agency
+const enable_agency = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        console.log(agency);
+        if (agency) {
+            agency.disabled = false;
+            await agency.save();
+            res.status(200).send(`Agency ${agency.name} has been enabled`);
+        } else {
+            res.status(404).send('Agency not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+const logout_admin = async (req, res) => {
+    res.clearCookie('auth_token'); // Clearing the authentication cookie
+    res.status(200).send('Logout successful');
+};
 
 
 
-module.exports = { signup_admin, login_admin, forgot_password,get_all_users, disable_user, enable_user, getAllPackages, disable_package, enable_package, update_Package, view_trend, view_user_trends,get_all_travelagencies, get_all_feedbacks, replyToFeedback, getAllRatings, count_total_users, count_total_travelagencies };
+
+module.exports = {
+    signup_admin,
+    login_admin,
+    forgot_password,
+    get_all_users,
+    disable_user,
+    enable_user,
+    getAllPackages,
+    disable_package,
+    enable_package,
+    update_Package,
+    view_trend,
+    view_user_trends,
+    get_all_travelagencies,
+    get_all_feedbacks,
+    replyToFeedback,
+    getAllRatings,
+    count_total_users,
+    count_total_travelagencies,
+    disable_agency,
+    enable_agency,
+    get_travelagency_byID,
+    logout_admin
+};
 
