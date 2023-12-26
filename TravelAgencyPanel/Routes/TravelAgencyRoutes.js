@@ -3,6 +3,7 @@ const {
   createTravelAgency,
   getAllTravelAgencies,
   getTravelAgencyById,
+  getTravelAgencyPackagesById,
   updateTravelAgency,
   deleteTravelAgency,
 } = require("../Controller/TravelAgencyController");
@@ -16,6 +17,7 @@ router.post("/login", loginTravelAgency);
 router.post("/", createTravelAgency);
 router.get("/", getAllTravelAgencies);
 router.get("/:id", getTravelAgencyById);
+router.get("/:id/packages", getTravelAgencyPackagesById);
 router.put("/", AuthenticateTravelAgency, updateTravelAgency);
 router.delete("/", AuthenticateTravelAgency, deleteTravelAgency);
 

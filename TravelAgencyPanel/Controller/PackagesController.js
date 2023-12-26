@@ -55,9 +55,13 @@ const createPackage = async (req, res) => {
 const getAllPackages = async (req, res) => {
   Package.find({})
     .then(data => {
-      res
-        .status(200)
-        .send({ message: "Packages retrieved successfully", data });
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Packages retrieved successfully", data });
+      } else {
+        res.status(404).send({ message: "No packages found" });
+      }
     })
     .catch(err => {
       res
@@ -71,7 +75,13 @@ const getPackageById = async (req, res) => {
 
   Package.findById(id)
     .then(data => {
-      res.status(200).send({ message: "Package retrieved successfully", data });
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Package retrieved successfully", data });
+      } else {
+        res.status(404).send({ message: "Package not found" });
+      }
     })
     .catch(err => {
       res.status(500).send({ message: "Error retrieving package", error: err });
@@ -115,7 +125,11 @@ const updatePackageById = async (req, res) => {
     { new: true }
   )
     .then(data => {
-      res.status(200).send({ message: "Package updated successfully", data });
+      if (data) {
+        res.status(200).send({ message: "Package updated successfully", data });
+      } else {
+        res.status(400).send({ message: "Package not found" });
+      }
     })
     .catch(err => {
       res.status(500).send({ message: "Error updating package", error: err });
