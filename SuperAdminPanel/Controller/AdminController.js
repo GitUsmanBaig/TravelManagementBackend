@@ -26,7 +26,8 @@ const login_admin = async (req, res) => {
         const admin = await Admin.findOne({ email });
         if (admin && password === admin.password) {
             const token = jwt.sign({ id: admin._id }, SECRET_KEY, { expiresIn: '1d' });
-            res.cookie('auth_token', token);
+            res.cookie('auth_token', token,  { httpOnly: true });
+            console.log(token);
             res.status(200).json(`Login Successful ${admin.name}`);
         }
         else {
@@ -81,6 +82,8 @@ const get_all_users = async (req, res) => {
             message: "Users retrieved successfully",
             data: users
         });
+        const token = req.cookies.auth_token;
+        console.log(token);
     } catch (err) {
         res.status(500).send({ message: "Error retrieving users", error: err });
     }
@@ -291,9 +294,9 @@ const update_Package = async (req, res) => {
         });
 
         await package.save();
-        res.status(200).send(`Package ${package.name} has been updated`);
+        res.status(200).json(`Package ${package.name} has been updated`);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 };
 
@@ -373,6 +376,8 @@ const get_all_travelagencies = async (req, res) => {
     }
 
 }
+
+
 //get all feedbacks
 const get_all_feedbacks = async (req, res) => {
     try {
@@ -386,6 +391,7 @@ const get_all_feedbacks = async (req, res) => {
                     travelAgencyId: agency._id,
                     travelAgencyName: agency.name,
                     feedback: feedback.feedback,
+                    feedbackId: feedback._id, // This line adds the feedback ID
                     customerId: feedback.customerId
                 };
             }));
@@ -398,33 +404,41 @@ const get_all_feedbacks = async (req, res) => {
     } catch (err) {
         res.status(500).send({ message: "Error retrieving feedbacks", error: err });
     }
-};
+}
+
 
 
 const replyToFeedback = async (req, res) => {
-    const { feedbackId, response } = req.body;
-    const { travelAgencyId } = req.params;
+    const { feedbackId } = req.params; // Retrieve feedbackId from params
+    const { response } = req.body; // Retrieve response from body
 
     try {
-        const travelAgency = await TravelAgency.findById(travelAgencyId);
-        if (!travelAgency) {
-            return res.status(404).send({ message: "Travel Agency not found" });
-        }
-
-        const feedback = travelAgency.userFeedback.id(feedbackId);
-        if (!feedback) {
+        // Find the feedback and the associated travel agency
+        const agency = await TravelAgency.findOne({ "userFeedback._id": feedbackId }, { 'userFeedback.$': 1 }).populate('userFeedback.customerId');
+        
+        if (!agency || !agency.userFeedback || agency.userFeedback.length === 0) {
             return res.status(404).send({ message: "Feedback not found" });
         }
 
-        const user = await User.findById(feedback.customerId);
-        console.log(user);
+        // Extract the feedback and the user from the populated field
+        const feedback = agency.userFeedback[0];
+        const user = feedback.customerId; // The customerId is now a populated User document
+
+        console.log(feedback, user);
+
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
 
         // Concatenate feedback and admin response
         const combinedResponse = `Feedback: ${feedback.feedback}\nResponse: ${response}`;
-        user.responses.push(combinedResponse);
+
+        // Update the responses array for the user
+        const feedbackObject = {
+            feedbackId: feedback._id, // Use the feedback's _id
+            feedback: combinedResponse
+        };
+        user.responses.push(feedbackObject);
         await user.save();
 
         // Send email to user
@@ -448,7 +462,9 @@ const replyToFeedback = async (req, res) => {
     } catch (err) {
         res.status(500).send({ message: "Error processing request", error: err });
     }
-}
+};
+
+
 
 
 const count_total_users = async (req, res) => {

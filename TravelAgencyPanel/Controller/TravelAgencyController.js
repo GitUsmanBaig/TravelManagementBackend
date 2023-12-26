@@ -53,7 +53,7 @@ const createTravelAgency = async (req, res) => {
   if (logoUrl) logoUrl = logoUrl.secure_url;
   else res.status(500).json({ message: "Error uploading image" });
 
-  TravelAgency.create({ name, email, password, helplineNumber, logoUrl })
+  TravelAgency.create({ name, email, password, helplineNumber, logoUrl, disabled: false })
     .then(data => {
       res
         .status(201)

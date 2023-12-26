@@ -44,7 +44,7 @@ router.get('/getAllTravelAgencies', authenticate_admin, adminController.get_all_
 router.get('/getAllFeedbacks', authenticate_admin, adminController.get_all_feedbacks);
 
 //respond to feedback
-router.post('/reply-feedback/:travelAgencyId', authenticate_admin, adminController.replyToFeedback);
+router.post('/reply-feedback/:feedbackId', authenticate_admin, adminController.replyToFeedback);
 
 //get all ratings
 router.get('/getAllRatings', authenticate_admin, adminController.getAllRatings);
