@@ -132,13 +132,10 @@ const updatePackageById = async (req, res) => {
     startDate,
     endDate,
     isActive,
-    imageUrl,
     otherFacilites,
     hotel,
     city,
   } = req.body;
-
-  const travelAgency = req.body.signedInAgency.id;
 
   Package.findByIdAndUpdate(
     id,
@@ -150,10 +147,8 @@ const updatePackageById = async (req, res) => {
       startDate,
       endDate,
       isActive,
-      imageUrl,
       otherFacilites,
       hotel,
-      travelAgency,
       city,
     },
     { new: true }
@@ -166,12 +161,14 @@ const updatePackageById = async (req, res) => {
       }
     })
     .catch(err => {
+      console.log(err);
       res.status(500).send({ message: "Error updating package", error: err });
     });
 };
 
 const deletePackageById = async (req, res) => {
   const { id } = req.params;
+  console.log("here");
 
   try {
     const packageToDelete = await Package.findById(id);
