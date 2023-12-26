@@ -49,4 +49,6 @@ router.get('/getHotelofPackage/:id', authenticate_user, userController.getHotelb
 
 router.get('/getTravelAgency', authenticate_user, userController.getTravelAgency);//to remove
 
+router.post('/addHotelReview/:id', authenticate_user, userController.addHotelReview);
+
 module.exports = router;

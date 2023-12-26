@@ -8,6 +8,7 @@ const Booking = require("../../Schemas/Booking.schema");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
 const BookingHistory = require("../Schema/bookingHistory");
 const Hotel = require('../../Schemas/Hotel.schema');
+const Review = require('../../HotelOwnerPanel/Schema/Review.schema');
 
 const signup_user = async (req, res) => {
     const { name, email, password, CNIC, contact, preferences } = req.body;
@@ -234,7 +235,8 @@ const confirmationPackage = async (req, res) => {
                 city: package.city,
                 hotel: hotel.name,
                 travelAgency: TravelAgency.name,
-                bookingId: booking._id
+                bookingId: booking._id,
+                travelAgencyId: package.travelAgency,
                 //travelAgencyhelplineNumber: TravelAgency.helplineNumber
             });
             console.log(package.counttotalbookings);
@@ -483,6 +485,27 @@ const getBookingHistory = async (req, res) => {
     }
 };
 
+const addHotelReview = async (req, res) => {
+    const { review } = req.body;
+    const { rating } = req.body;
+    const userId = req.user.id;
+    const hotelId = req.params.id;
+    try {
+        const newReview = new Review({
+            hotel: hotelId,
+            guest: userId,
+            rating: rating,
+            comment: review
+        });
+        await newReview.save();
+        res.status(200).json('Review added successfully');
+
+    }
+    catch (err) {
+        res.status(500).send(err.message);
+    }
+}
+
 module.exports = {
     signup_user,
     login_user,
@@ -505,5 +528,6 @@ module.exports = {
     getFeedbacksReceived,
     getHotelbyID,
     getProfile,
-    getTravelAgency
+    getTravelAgency,
+    addHotelReview
 };
