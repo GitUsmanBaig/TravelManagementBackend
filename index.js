@@ -28,7 +28,7 @@ const HotelOwnerRouter = require("./HotelOwnerPanel/Routes/hotelRoutes"); // Imp
 const ReservationRouter = require("./HotelOwnerPanel/Routes/reservationRoutes"); // Import Reservation routes
 const ReviewRouter = require("./HotelOwnerPanel/Routes/reviewRoutes"); // Import Review routes
 const loginRouter = require("./HotelOwnerPanel/Routes/loginRoutes");
-
+const AllHotelRouter = require("./HotelOwnerPanel/Routes/AllHotelRoutes");
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
 app.use("/api/package", PackageRouter);
@@ -44,6 +44,7 @@ app.use("/api/hotel-owner", loginRouter); // Use login routes
 app.use("/api/hotel-owner", HotelOwnerRouter); // Use Hotel Owner routes
 app.use("/api/reservation", ReservationRouter); // Use Reservation routes
 app.use("/api/review", ReviewRouter); // Use Review routes
+app.use("/api/hotel", AllHotelRouter);
 
 // Database connection
 mongoose

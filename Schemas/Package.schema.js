@@ -8,7 +8,7 @@ const packageSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
   isActive: { type: Boolean, default: true },
   imageUrl: { type: String, required: true },
-  otherImages: [{ type: String, required: true }],
+  otherFacilites: [{ type: String, required: true }],
   totalAmount: { type: Number, required: true },
   noOfPersons: { type: Number, required: true },
   hotel: {
