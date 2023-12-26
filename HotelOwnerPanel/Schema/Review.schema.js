@@ -8,7 +8,7 @@ const reviewSchema = new mongoose.Schema({
   },
   guest: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Customer', 
+    ref: 'UserProfile', 
     required: true
   },
   rating: {

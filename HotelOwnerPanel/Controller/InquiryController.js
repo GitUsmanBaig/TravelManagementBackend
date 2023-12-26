@@ -1,14 +1,21 @@
 const Inquiry = require('../Schema/Inquiry.schema');
+const Hotel = require('../../Schemas/Hotel.schema');
+const UserProfile = require('../../TravellerPanel/Schema/userProfile');
 
 const InquiryController = {
     getInquiriesForHotel: async (req, res) => {
         try {
-            const inquiries = await Inquiry.find({ hotel: req.params.hotelId }).populate('guest', 'name email');
+            console.log("Hotel ID from params:", req.params.hotelId);
+            const inquiries = await Inquiry.find({ hotel: req.params.hotelId })
+                                           .populate('guest', 'name email');
+            console.log("Inquiries found:", inquiries);
             res.json(inquiries);
         } catch (error) {
+            console.error("Error fetching inquiries:", error);
             res.status(500).send(error.message);
         }
     },
+    
 
     respondToInquiry: async (req, res) => {
         try {

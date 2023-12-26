@@ -40,5 +40,32 @@ router.get('/view_user_trend', authenticate_admin, adminController.view_user_tre
 //get all travel agencies
 router.get('/getAllTravelAgencies', authenticate_admin, adminController.get_all_travelagencies);
 
+//get all feedbacks
+router.get('/getAllFeedbacks', authenticate_admin, adminController.get_all_feedbacks);
+
+//respond to feedback
+router.post('/reply-feedback/:feedbackId', authenticate_admin, adminController.replyToFeedback);
+
+//get all ratings
+router.get('/getAllRatings', authenticate_admin, adminController.getAllRatings);
+
+//count users
+router.get('/countUsers', authenticate_admin, adminController.count_total_users);
+
+//count travel agencies
+router.get('/countTravelAgencies', authenticate_admin, adminController.count_total_travelagencies);
+
+//disable travel agency
+router.put('/disable_travelagency/:agencyId', authenticate_admin, adminController.disable_agency);
+
+//enable travel agency
+router.put('/enable_travelagency/:agencyId', authenticate_admin, adminController.enable_agency);
+
+//get trabel agency by id
+router.get('/getTravelAgencyById/:agencyId', authenticate_admin, adminController.get_travelagency_byID);
+
+//handlelogout
+router.post('/logout', authenticate_admin, adminController.logout_admin);
+
 module.exports = router;
 

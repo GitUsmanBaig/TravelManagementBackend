@@ -10,7 +10,7 @@ const travelAgencySchema = new mongoose.Schema({
     {
       customerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Customer",
+        ref: "UserProfile",
         required: true,
       },
       feedback: String,
@@ -22,6 +22,7 @@ const travelAgencySchema = new mongoose.Schema({
     enum: ["Approved", "Pending", "Rejected"],
     default: "Pending",
   },
+  disabled: { type: Boolean, default: false },
 });
 
 const model = mongoose.model("TravelAgency", travelAgencySchema);

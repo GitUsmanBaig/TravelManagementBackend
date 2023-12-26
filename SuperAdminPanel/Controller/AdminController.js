@@ -13,9 +13,9 @@ const signup_admin = async (req, res) => {
     const admin = new Admin({ name, email, password, CNIC, contact, disabled: false });
     try {
         await admin.save();
-        res.status(200).send(`Admin ${name} created`);
+        res.status(200).json(`Admin ${name} created`);
     } catch (err) {
-        res.status(422).send(err.message);
+        res.status(422).json(err.message);
     }
 };
 
@@ -26,15 +26,16 @@ const login_admin = async (req, res) => {
         const admin = await Admin.findOne({ email });
         if (admin && password === admin.password) {
             const token = jwt.sign({ id: admin._id }, SECRET_KEY, { expiresIn: '1d' });
-            res.cookie('auth_token', token);
-            res.status(200).send(`Login Successful ${admin.name}`);
+            res.cookie('auth_token', token, { httpOnly: true });
+            console.log(token);
+            res.status(200).json(`Login Successful ${admin.name}`);
         }
         else {
-            res.status(401).send('Invalid email or password');
+            res.status(401).json('Invalid email or password');
         }
     }
     catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 }
 
@@ -64,12 +65,12 @@ const forgot_password = async (req, res) => {
             });
 
             console.log("Message sent: %s", info.messageId);
-            res.status(200).send(`Password sent to ${user.email}`);
+            res.status(200).json(`Password sent to ${user.email}`);
         } else {
-            res.status(401).send('Invalid email or password');
+            res.status(401).json('Invalid email or password');
         }
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 };
 
@@ -81,10 +82,30 @@ const get_all_users = async (req, res) => {
             message: "Users retrieved successfully",
             data: users
         });
+        const token = req.cookies.auth_token;
+        console.log(token);
     } catch (err) {
         res.status(500).send({ message: "Error retrieving users", error: err });
     }
+}
 
+//get user byID
+const get_user_byID = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const user = await User.findById(userId);
+        if (user) {
+            res.status(200).send({
+                message: "User retrieved successfully",
+                data: user
+            });
+        } else {
+            res.status(404).send('User not found');
+        }
+    }
+    catch (err) {
+        res.status(500).send({ message: "Error retrieving user", error: err });
+    }
 }
 
 // Disable user
@@ -273,13 +294,38 @@ const update_Package = async (req, res) => {
         });
 
         await package.save();
-        res.status(200).send(`Package ${package.name} has been updated`);
+        res.status(200).json(`Package ${package.name} has been updated`);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 };
 
 
+const getAllRatings = async (req, res) => {
+    try {
+        const packages = await Package.find({}).lean();
+        const packagesWithAvgRating = packages.map(pkg => {
+            const avgRating = pkg.ratings.length > 0
+                ? pkg.ratings.reduce((sum, rating) => sum + rating, 0) / pkg.ratings.length
+                : 0;
+            return {
+                name: pkg.name,
+                avgRating: avgRating.toFixed(1) // Rounds to one decimal place
+            };
+        }).filter(pkg => pkg.avgRating > 0); // Exclude packages with zero avg rating
+
+        res.status(200).json({
+            message: "Packages with non-zero average ratings retrieved successfully",
+            data: packagesWithAvgRating
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error retrieving packages", error: err });
+    }
+};
+
+
+
+//view trend
 const view_trend = async (req, res) => {
     try {
         const topPackages = await Package.find({}).sort({ counttotalbookings: -1 }).limit(5);
@@ -331,5 +377,206 @@ const get_all_travelagencies = async (req, res) => {
 
 }
 
-module.exports = { signup_admin, login_admin, forgot_password,get_all_users, disable_user, enable_user, getAllPackages, disable_package, enable_package, update_Package, view_trend, view_user_trends,get_all_travelagencies };
+//get travel agency byID
+const get_travelagency_byID = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const travelagency = await TravelAgency.findById(agencyId);
+        if (travelagency) {
+            res.status(200).send({
+                message: "Travel Agency retrieved successfully",
+                data: travelagency
+            });
+        } else {
+            res.status(404).send('Travel Agency not found');
+        }
+    }
+    catch (err) {
+        res.status(500).send({ message: "Error retrieving travel agency", error: err });
+    }
+}
+
+
+//get all feedbacks
+const get_all_feedbacks = async (req, res) => {
+    try {
+        const travelAgencies = await TravelAgency.find({}).select('userFeedback');
+        let allFeedbacks = [];
+
+        travelAgencies.forEach(agency => {
+            // Combine all feedbacks into a single array
+            allFeedbacks = allFeedbacks.concat(agency.userFeedback.map(feedback => {
+                return {
+                    travelAgencyId: agency._id,
+                    travelAgencyName: agency.name,
+                    feedback: feedback.feedback,
+                    feedbackId: feedback._id, // This line adds the feedback ID
+                    customerId: feedback.customerId
+                };
+            }));
+        });
+
+        res.status(200).send({
+            message: "All feedbacks retrieved successfully",
+            data: allFeedbacks
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving feedbacks", error: err });
+    }
+}
+
+
+
+const replyToFeedback = async (req, res) => {
+    const { feedbackId } = req.params; // Retrieve feedbackId from params
+    const { response } = req.body; // Retrieve response from body
+
+    try {
+        // Find the feedback and the associated travel agency
+        const agency = await TravelAgency.findOne({ "userFeedback._id": feedbackId }, { 'userFeedback.$': 1 }).populate('userFeedback.customerId');
+
+        if (!agency || !agency.userFeedback || agency.userFeedback.length === 0) {
+            return res.status(404).send({ message: "Feedback not found" });
+        }
+
+        // Extract the feedback and the user from the populated field
+        const feedback = agency.userFeedback[0];
+        const user = feedback.customerId; // The customerId is now a populated User document
+
+        console.log(feedback, user);
+
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+
+        // Concatenate feedback and admin response
+        const combinedResponse = `Feedback: ${feedback.feedback}\nResponse: ${response}`;
+
+        // Update the responses array for the user
+        const feedbackObject = {
+            feedbackId: feedback._id, // Use the feedback's _id
+            feedback: combinedResponse
+        };
+        user.responses.push(feedbackObject);
+        await user.save();
+
+        // Send email to user
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            auth: {
+                user: 'piper.gulgowski61@ethereal.email',
+                pass: '8fD3yCgVMyhHek1T62'
+            }
+        });
+
+        await transporter.sendMail({
+            from: '"Admin" <admin@yourdomain.com>',
+            to: user.email,
+            subject: "Response to your Feedback",
+            text: combinedResponse,
+        });
+
+        res.status(200).send({ message: "Response sent successfully" });
+    } catch (err) {
+        res.status(500).send({ message: "Error processing request", error: err });
+    }
+};
+
+
+
+
+const count_total_users = async (req, res) => {
+    try {
+        const userCount = await User.countDocuments();
+        res.status(200).json({
+            message: "Total number of users retrieved successfully",
+            count: userCount
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error retrieving user count", error: err });
+    }
+};
+
+
+const count_total_travelagencies = async (req, res) => {
+    try {
+        const travelAgencyCount = await TravelAgency.countDocuments();
+        res.status(200).json({
+            message: "Total number of travel agencies retrieved successfully",
+            count: travelAgencyCount
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error retrieving travel agency count", error: err });
+    }
+};
+
+// Disable agency
+const disable_agency = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        if (agency) {
+            agency.disabled = true;
+            await agency.save();
+            res.status(200).send(`Agency ${agency.name} has been disabled`);
+        } else {
+            res.status(404).send('Agency not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+// Enable agency
+const enable_agency = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        console.log(agency);
+        if (agency) {
+            agency.disabled = false;
+            await agency.save();
+            res.status(200).send(`Agency ${agency.name} has been enabled`);
+        } else {
+            res.status(404).send('Agency not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+const logout_admin = async (req, res) => {
+    res.clearCookie('auth_token'); // Clearing the authentication cookie
+    res.status(200).send('Logout successful');
+};
+
+
+
+
+module.exports = {
+    signup_admin,
+    login_admin,
+    forgot_password,
+    get_all_users,
+    disable_user,
+    enable_user,
+    getAllPackages,
+    disable_package,
+    enable_package,
+    update_Package,
+    view_trend,
+    view_user_trends,
+    get_all_travelagencies,
+    get_all_feedbacks,
+    replyToFeedback,
+    getAllRatings,
+    count_total_users,
+    count_total_travelagencies,
+    disable_agency,
+    enable_agency,
+    get_travelagency_byID,
+    logout_admin
+};
 
