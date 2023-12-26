@@ -43,7 +43,7 @@ router.get('/getAllBookingHistory', authenticate_user, userController.getBooking
 
 router.get('/getFeedbacksSent', authenticate_user, userController.getFeedbacksSent);
 
-router.get('/getFeedbacksReceived', authenticate_user, userController.getFeedbacksReceived);
+router.get('/getFeedbacksReceived/:id', authenticate_user, userController.getFeedbacksReceived);
 
 router.get('/getHotelofPackage/:id', authenticate_user, userController.getHotelbyID);
 

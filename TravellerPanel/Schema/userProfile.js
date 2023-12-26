@@ -9,7 +9,16 @@ const userProfileSchema = new Schema({
     contact: String,
     preferences: [String],
     disabled: Boolean,
-    responses: [String],
+    responses: [
+        {
+            feedbackId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "TravelAgency.userFeedback",
+                required: true
+            },
+            feedback: { type: String, required: true }
+        }
+    ],
     responceCount: { type: Number, default: 0 },
     bookingamount: { type: Number, default: 0 },
 });

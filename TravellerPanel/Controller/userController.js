@@ -1,6 +1,7 @@
 const User = require('../Schema/userProfile'); // Assuming you have a User.js in your models directory
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = "mysecretkey";
+const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const Package = require("../../Schemas/Package.schema");
 const Booking = require("../../Schemas/Booking.schema");
@@ -450,20 +451,21 @@ const getFeedbacksSent = async (req, res) => {
 
 const getFeedbacksReceived = async (req, res) => {
     const userId = req.user.id;
+    const feedbackId =req.params.id;
+
     try {
         const user = await User.findById(userId);
         if (!user) return res.status(404).send('User not found');
-        //count how many responses are there in User
-        user.responses.forEach(response => {
-            user.responceCount++;
-        });
-
-        res.status(200).send(user.responses);
-    }
-    catch (err) {
+        const feedbacksReceived = user.responses.filter(response =>
+            response.feedbackId.equals(feedbackId)
+        );
+        res.status(200).send(feedbacksReceived);
+    } catch (err) {
         res.status(500).send(err.message);
     }
 }
+
+
 
 const getBookingHistory = async (req, res) => {
     const userId = req.user.id;
