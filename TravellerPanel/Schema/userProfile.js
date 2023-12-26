@@ -11,6 +11,7 @@ const userProfileSchema = new Schema({
     disabled: Boolean,
     responses: [
         {
+            
             feedbackId: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "TravelAgency.userFeedback",
@@ -21,6 +22,7 @@ const userProfileSchema = new Schema({
     ],
     responceCount: { type: Number, default: 0 },
     bookingamount: { type: Number, default: 0 },
+    counttotalbookings: { type: Number, default: 0 },
 });
 
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);
