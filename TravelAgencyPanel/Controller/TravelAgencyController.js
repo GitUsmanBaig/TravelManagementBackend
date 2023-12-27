@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
+const UserProfile = require("../../TravellerPanel/Schema/userProfile"); // replace with your actual path
 const Package = require("../../Schemas/Package.schema");
 const Booking = require("../../Schemas/Booking.schema");
 const cloudinary = require("../../cloudinary");
@@ -181,7 +182,7 @@ const deleteTravelAgency = async (req, res) => {
 
 const getTravelAgencyBookingsById = async (req, res) => {
   const { id } = req.body.signedInAgency;
-  console.log(id);
+  //console.log(id);
   try {
     const packages = await Package.find({ travelAgency: id });
     const bookings = await Promise.all(
@@ -195,6 +196,81 @@ const getTravelAgencyBookingsById = async (req, res) => {
   }
 };
 
+const getTravelAgencyFeedbackById = async (req, res) => {
+  const { id } = req.body.signedInAgency;
+
+  TravelAgency.findById(id)
+    .then(data => {
+      if (data) {
+        if (data.userFeedback.length === 0) {
+          res.status(404).send({ message: "No feedback found" });
+        } else {
+          res.status(200).send({
+            message: "Travel agency feedback retrieved successfully",
+            data: data.userFeedback,
+          });
+        }
+      } else {
+        res.status(404).send({ message: "Travel agency feedback not found" });
+      }
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: "Error retrieving travel agency feedback",
+        error: err,
+      });
+    });
+};
+
+const respondToTravelAgencyFeedbackById = async (req, res) => {
+  const { id } = req.body.signedInAgency;
+  const { feedbackId, response } = req.body;
+
+  try {
+    const data = await TravelAgency.findById(id);
+    if (!data) {
+      return res.status(404).send({ message: "Travel agency not found" });
+    }
+
+    if (data.userFeedback.length === 0) {
+      return res.status(404).send({ message: "No feedback found" });
+    }
+
+    for (const feedback of data.userFeedback) {
+      if (feedback._id == feedbackId) {
+        const updatedUser = await UserProfile.findByIdAndUpdate(
+          feedback.customerId,
+          { $push: { responses: { feedbackId, feedback: response } } },
+          { new: true }
+        );
+
+        if (!updatedUser) {
+          return res.status(500).send({
+            message: "Error responding to user",
+            error: "User not found",
+          });
+        }
+
+        feedback.responded = true; // Add this line
+        await data.save(); // And this line
+
+        console.log(updatedUser);
+
+        return res.status(200).send({
+          message: "User responded successfully",
+          data: updatedUser.responses,
+        });
+      }
+    }
+    return res.status(404).send({ message: "Feedback not found" });
+  } catch (err) {
+    res.status(500).send({
+      message: "Error retrieving travel agency",
+      error: err,
+    });
+  }
+};
+
 module.exports = {
   loginTravelAgency,
   createTravelAgency,
@@ -204,4 +280,6 @@ module.exports = {
   updateTravelAgency,
   deleteTravelAgency,
   getTravelAgencyBookingsById,
+  getTravelAgencyFeedbackById,
+  respondToTravelAgencyFeedbackById,
 };
