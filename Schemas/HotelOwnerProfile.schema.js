@@ -15,6 +15,10 @@ const hotelOwnerProfileSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
 });
 
 //hashing

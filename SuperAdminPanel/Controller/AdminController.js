@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const User = require('../../TravellerPanel/Schema/userProfile.js');
 const Package = require("../../Schemas/Package.schema");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
+const HotelOwner = require('../../Schemas/HotelOwnerProfile.schema.js'); 
 
 
 //signup admin
@@ -547,10 +548,116 @@ const enable_agency = async (req, res) => {
 };
 
 
+// Approve Travel Agency
+const approve_agency = async (req, res) => {
+    const { agencyId } = req.params;
+
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        if (!agency) {
+            return res.status(404).send('Agency not found');
+        }
+
+        agency.approved = "Approved";
+        await agency.save();
+
+        res.status(200).send(`Agency ${agency.name} has been approved`);
+    } catch (err) {
+        res.status(500).send({ message: "Error updating travel agency", error: err });
+    }
+};
+
+
+// Reject Travel Agency
+const reject_agency = async (req, res) => {
+    const { agencyId } = req.params;
+
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        if (!agency) {
+            return res.status(404).send('Agency not found');
+        }
+
+        agency.approved = "Rejected";
+        await agency.save();
+
+        res.status(200).send(`Agency ${agency.name} has been rejected`);
+    } catch (err) {
+        res.status(500).send({ message: "Error updating travel agency", error: err });
+    }
+};
+
+
+//getAllHotelOwners
+const get_all_hotelowners = async (req, res) => {
+    try {
+        const hotelowners = await HotelOwner.find({});
+        res.status(200).send({
+            message: "Hotel Owners retrieved successfully",
+            data: hotelowners
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving hotel owners", error: err });
+    }
+
+}
+
+// Enable hotel owner
+const enable_hotel_owner = async (req, res) => {
+    const { hotelOwnerId } = req.params;
+    try {
+        const hotelOwner = await HotelOwner.findById(hotelOwnerId);
+        if (hotelOwner) {
+            hotelOwner.disabled = false;
+            await hotelOwner.save();
+            res.status(200).send(`Hotel owner ${hotelOwner.name} has been enabled`);
+        } else {
+            res.status(404).send('Hotel owner not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+// Disable hotel owner
+const disable_hotel_owner = async (req, res) => {
+    const { hotelOwnerId } = req.params;
+    try {
+        const hotelOwner = await HotelOwner.findById(hotelOwnerId);
+        if (hotelOwner) {
+            hotelOwner.disabled = true;
+            await hotelOwner.save();
+            res.status(200).send(`Hotel owner ${hotelOwner.name} has been disabled`);
+        } else {
+            res.status(404).send('Hotel owner not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+const get_top_users_by_bookings = async (req, res) => {
+    try {
+        const topUsers = await User.find({})
+            .sort({ counttotalbookings: -1 }) 
+            .limit(3) // Limit to top 3 users
+            .select('name email counttotalbookings'); // Select only specific fields
+
+        res.status(200).json({
+            message: "Top 3 users with the most bookings retrieved successfully",
+            data: topUsers
+        });
+    } catch (err) {
+        res.status(500).send({ message: "Error retrieving top users", error: err });
+    }
+}
+
 const logout_admin = async (req, res) => {
     res.clearCookie('auth_token'); // Clearing the authentication cookie
     res.status(200).send('Logout successful');
 };
+
 
 
 
@@ -577,6 +684,12 @@ module.exports = {
     disable_agency,
     enable_agency,
     get_travelagency_byID,
+    approve_agency,
+    reject_agency,
+    get_all_hotelowners,
+    enable_hotel_owner,
+    disable_hotel_owner,
+    get_top_users_by_bookings,
     logout_admin
 };
 

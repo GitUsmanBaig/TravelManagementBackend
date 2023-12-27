@@ -20,7 +20,8 @@ router.post("/signup", async (req, res) => {
       hotelOwner = new HotelOwner({
           name,
           email,
-          password
+          password,
+          disabled: false,
       });
 
       // Hash password before saving the hotel owner

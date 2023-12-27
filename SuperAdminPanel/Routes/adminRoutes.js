@@ -40,6 +40,9 @@ router.get('/view_user_trend', authenticate_admin, adminController.view_user_tre
 //get all travel agencies
 router.get('/getAllTravelAgencies', authenticate_admin, adminController.get_all_travelagencies);
 
+//get all hotel owners
+router.get('/getAllHotelOwners', authenticate_admin, adminController.get_all_hotelowners);
+
 //get all feedbacks
 router.get('/getAllFeedbacks', authenticate_admin, adminController.get_all_feedbacks);
 
@@ -63,6 +66,21 @@ router.put('/enable_travelagency/:agencyId', authenticate_admin, adminController
 
 //get trabel agency by id
 router.get('/getTravelAgencyById/:agencyId', authenticate_admin, adminController.get_travelagency_byID);
+
+//approve agency
+router.put('/approve_agency/:agencyId', authenticate_admin, adminController.approve_agency);
+
+//reject agency
+router.put('/reject_agency/:agencyId', authenticate_admin, adminController.reject_agency);
+
+//enable hotelowner
+router.put('/enable_hotelowner/:hotelOwnerId', authenticate_admin, adminController.enable_hotel_owner);
+
+//disable hotelowner
+router.put('/disable_hotelowner/:hotelOwnerId', authenticate_admin, adminController.disable_hotel_owner);
+
+//get top booking users
+router.get('/top_users', authenticate_admin, adminController.get_top_users_by_bookings);
 
 //handlelogout
 router.post('/logout', authenticate_admin, adminController.logout_admin);
