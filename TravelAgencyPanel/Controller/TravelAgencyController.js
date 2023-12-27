@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
 const Package = require("../../Schemas/Package.schema");
+const Booking = require("../../Schemas/Booking.schema");
 const cloudinary = require("../../cloudinary");
 
 const loginTravelAgency = async (req, res) => {
@@ -55,7 +56,14 @@ const createTravelAgency = async (req, res) => {
   if (logoUrl) logoUrl = logoUrl.secure_url;
   else res.status(500).json({ message: "Error uploading image" });
 
-  TravelAgency.create({ name, email, password, helplineNumber, logoUrl, disabled: false })
+  TravelAgency.create({
+    name,
+    email,
+    password,
+    helplineNumber,
+    logoUrl,
+    disabled: false,
+  })
     .then(data => {
       res
         .status(201)
@@ -171,6 +179,22 @@ const deleteTravelAgency = async (req, res) => {
     });
 };
 
+const getTravelAgencyBookingsById = async (req, res) => {
+  const { id } = req.body.signedInAgency;
+  console.log(id);
+  try {
+    const packages = await Package.find({ travelAgency: id });
+    const bookings = await Promise.all(
+      packages.map(async pkg => {
+        return await Booking.find({ packageId: pkg._id }).populate("packageId");
+      })
+    );
+    res.status(200).json({ message: "Bookings reterieved", data: bookings });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+};
+
 module.exports = {
   loginTravelAgency,
   createTravelAgency,
@@ -179,4 +203,5 @@ module.exports = {
   getTravelAgencyPackagesById,
   updateTravelAgency,
   deleteTravelAgency,
+  getTravelAgencyBookingsById,
 };
