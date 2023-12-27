@@ -83,7 +83,7 @@ const createPackage = async (req, res) => {
 };
 
 const getAllPackages = async (req, res) => {
-  Package.find({})
+  Package.find({ disabled: false })
     .populate("hotel", "name")
     .populate("travelAgency", "name")
     .then(data => {
@@ -110,6 +110,8 @@ const getPackageById = async (req, res) => {
     .populate("travelAgency", "name")
     .then(data => {
       if (data) {
+        if (data.disabled)
+          return res.status(404).send({ message: "Package not found" });
         res
           .status(200)
           .send({ message: "Package retrieved successfully", data });

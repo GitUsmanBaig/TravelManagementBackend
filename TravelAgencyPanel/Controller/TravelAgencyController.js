@@ -22,6 +22,9 @@ const loginTravelAgency = async (req, res) => {
           "Secret to be replaced later"
         );
       }
+      if (data.approved !== "Approved")
+        res.status(400).json({ message: "Travel Agency not approved" });
+
       res
         .status(200)
         .json({ message: "Login successfull", token, id: data._id });
