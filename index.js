@@ -12,10 +12,10 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "*",
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
+    allowedHeaders: "Content-Type,Authorization,token",
   })
 );
 
@@ -28,7 +28,7 @@ const HotelOwnerRouter = require("./HotelOwnerPanel/Routes/hotelRoutes"); // Imp
 const ReservationRouter = require("./HotelOwnerPanel/Routes/reservationRoutes"); // Import Reservation routes
 const ReviewRouter = require("./HotelOwnerPanel/Routes/reviewRoutes"); // Import Review routes
 const authRoutes = require("./HotelOwnerPanel/Routes/authRoutes");
-
+const AllHotelRouter = require("./HotelOwnerPanel/Routes/AllHotelRoutes");
 // Travel Agency Routes
 app.use("/api/travel-agency", TravelAgencyRouter);
 app.use("/api/package", PackageRouter);
@@ -44,6 +44,7 @@ app.use("/api/hotel-owner/auth", authRoutes); // Use authentication routes
 app.use("/api/hotel-owner", HotelOwnerRouter); // Use Hotel Owner routes
 app.use("/api/reservation", ReservationRouter); // Use Reservation routes
 app.use("/api/review", ReviewRouter); // Use Review routes
+app.use("/api/hotel", AllHotelRouter);
 
 // Database connection
 mongoose

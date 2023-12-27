@@ -14,6 +14,7 @@ const travelAgencySchema = new mongoose.Schema({
         required: true,
       },
       feedback: String,
+      responded: { type: Boolean, default: false },
     },
   ],
   noOfPackages: { type: Number, default: 0 },
