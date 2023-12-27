@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const TravelAgency = require("../../Schemas/TravelAgency.schema");
+const Package = require("../../Schemas/Package.schema");
+const Booking = require("../../Schemas/Booking.schema");
 const cloudinary = require("../../cloudinary");
 
 const loginTravelAgency = async (req, res) => {
@@ -53,7 +56,14 @@ const createTravelAgency = async (req, res) => {
   if (logoUrl) logoUrl = logoUrl.secure_url;
   else res.status(500).json({ message: "Error uploading image" });
 
-  TravelAgency.create({ name, email, password, helplineNumber, logoUrl })
+  TravelAgency.create({
+    name,
+    email,
+    password,
+    helplineNumber,
+    logoUrl,
+    disabled: false,
+  })
     .then(data => {
       res
         .status(201)
@@ -71,9 +81,13 @@ const createTravelAgency = async (req, res) => {
 const getAllTravelAgencies = async (req, res) => {
   TravelAgency.find()
     .then(data => {
-      res
-        .status(200)
-        .send({ message: "Travel agencies retrieved successfully", data });
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Travel agencies retrieved successfully", data });
+      } else {
+        res.status(404).send({ message: "No travel agencies found" });
+      }
     })
     .catch(err => {
       res
@@ -87,14 +101,39 @@ const getTravelAgencyById = async (req, res) => {
 
   TravelAgency.findById(id)
     .then(data => {
-      res
-        .status(200)
-        .send({ message: "Travel agency retrieved successfully", data });
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Travel agency retrieved successfully", data });
+      } else {
+        res.status(404).send({ message: "Travel agency not found" });
+      }
     })
     .catch(err => {
       res
         .status(500)
         .send({ message: "Error retrieving travel agency", error: err });
+    });
+};
+
+const getTravelAgencyPackagesById = async (req, res) => {
+  const { id } = req.params;
+
+  Package.find({ travelAgency: id })
+    .populate("hotel", "name")
+    .then(data => {
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Packages retrieved successfully", data });
+      } else {
+        res.status(404).send({ message: "No packages found" });
+      }
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .send({ message: "Error retrieving packages", error: err });
     });
 };
 
@@ -107,9 +146,13 @@ const updateTravelAgency = async (req, res) => {
     { new: true }
   )
     .then(data => {
-      res
-        .status(200)
-        .send({ message: "Travel agency updated successfully", data });
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Travel agency updated successfully", data });
+      } else {
+        res.status(404).send({ message: "Travel agency not found" });
+      }
     })
     .catch(err => {
       res
@@ -121,9 +164,13 @@ const updateTravelAgency = async (req, res) => {
 const deleteTravelAgency = async (req, res) => {
   TravelAgency.findByIdAndDelete(req.body.signedInAgency.id)
     .then(data => {
-      res
-        .status(200)
-        .send({ message: "Travel agency deleted successfully", data });
+      if (data) {
+        res
+          .status(200)
+          .send({ message: "Travel agency deleted successfully", data });
+      } else {
+        res.status(404).send({ message: "Travel agency not found" });
+      }
     })
     .catch(err => {
       res
@@ -132,11 +179,29 @@ const deleteTravelAgency = async (req, res) => {
     });
 };
 
+const getTravelAgencyBookingsById = async (req, res) => {
+  const { id } = req.body.signedInAgency;
+  console.log(id);
+  try {
+    const packages = await Package.find({ travelAgency: id });
+    const bookings = await Promise.all(
+      packages.map(async pkg => {
+        return await Booking.find({ packageId: pkg._id }).populate("packageId");
+      })
+    );
+    res.status(200).json({ message: "Bookings reterieved", data: bookings });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+};
+
 module.exports = {
   loginTravelAgency,
   createTravelAgency,
   getAllTravelAgencies,
   getTravelAgencyById,
+  getTravelAgencyPackagesById,
   updateTravelAgency,
   deleteTravelAgency,
+  getTravelAgencyBookingsById,
 };

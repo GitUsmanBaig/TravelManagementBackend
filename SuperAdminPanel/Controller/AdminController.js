@@ -26,7 +26,8 @@ const login_admin = async (req, res) => {
         const admin = await Admin.findOne({ email });
         if (admin && password === admin.password) {
             const token = jwt.sign({ id: admin._id }, SECRET_KEY, { expiresIn: '1d' });
-            res.cookie('auth_token', token);
+            res.cookie('auth_token', token, { httpOnly: true });
+            console.log(token);
             res.status(200).json(`Login Successful ${admin.name}`);
         }
         else {
@@ -81,6 +82,8 @@ const get_all_users = async (req, res) => {
             message: "Users retrieved successfully",
             data: users
         });
+        const token = req.cookies.auth_token;
+        console.log(token);
     } catch (err) {
         res.status(500).send({ message: "Error retrieving users", error: err });
     }
@@ -291,9 +294,9 @@ const update_Package = async (req, res) => {
         });
 
         await package.save();
-        res.status(200).send(`Package ${package.name} has been updated`);
+        res.status(200).json(`Package ${package.name} has been updated`);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 };
 
@@ -302,8 +305,8 @@ const getAllRatings = async (req, res) => {
     try {
         const packages = await Package.find({}).lean();
         const packagesWithAvgRating = packages.map(pkg => {
-            const avgRating = pkg.ratings.length > 0 
-                ? pkg.ratings.reduce((sum, rating) => sum + rating, 0) / pkg.ratings.length 
+            const avgRating = pkg.ratings.length > 0
+                ? pkg.ratings.reduce((sum, rating) => sum + rating, 0) / pkg.ratings.length
                 : 0;
             return {
                 name: pkg.name,
@@ -373,6 +376,27 @@ const get_all_travelagencies = async (req, res) => {
     }
 
 }
+
+//get travel agency byID
+const get_travelagency_byID = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const travelagency = await TravelAgency.findById(agencyId);
+        if (travelagency) {
+            res.status(200).send({
+                message: "Travel Agency retrieved successfully",
+                data: travelagency
+            });
+        } else {
+            res.status(404).send('Travel Agency not found');
+        }
+    }
+    catch (err) {
+        res.status(500).send({ message: "Error retrieving travel agency", error: err });
+    }
+}
+
+
 //get all feedbacks
 const get_all_feedbacks = async (req, res) => {
     try {
@@ -386,6 +410,7 @@ const get_all_feedbacks = async (req, res) => {
                     travelAgencyId: agency._id,
                     travelAgencyName: agency.name,
                     feedback: feedback.feedback,
+                    feedbackId: feedback._id, // This line adds the feedback ID
                     customerId: feedback.customerId
                 };
             }));
@@ -398,33 +423,41 @@ const get_all_feedbacks = async (req, res) => {
     } catch (err) {
         res.status(500).send({ message: "Error retrieving feedbacks", error: err });
     }
-};
+}
+
 
 
 const replyToFeedback = async (req, res) => {
-    const { feedbackId, response } = req.body;
-    const { travelAgencyId } = req.params;
+    const { feedbackId } = req.params; // Retrieve feedbackId from params
+    const { response } = req.body; // Retrieve response from body
 
     try {
-        const travelAgency = await TravelAgency.findById(travelAgencyId);
-        if (!travelAgency) {
-            return res.status(404).send({ message: "Travel Agency not found" });
-        }
+        // Find the feedback and the associated travel agency
+        const agency = await TravelAgency.findOne({ "userFeedback._id": feedbackId }, { 'userFeedback.$': 1 }).populate('userFeedback.customerId');
 
-        const feedback = travelAgency.userFeedback.id(feedbackId);
-        if (!feedback) {
+        if (!agency || !agency.userFeedback || agency.userFeedback.length === 0) {
             return res.status(404).send({ message: "Feedback not found" });
         }
 
-        const user = await User.findById(feedback.customerId);
-        console.log(user);
+        // Extract the feedback and the user from the populated field
+        const feedback = agency.userFeedback[0];
+        const user = feedback.customerId; // The customerId is now a populated User document
+
+        console.log(feedback, user);
+
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
 
         // Concatenate feedback and admin response
         const combinedResponse = `Feedback: ${feedback.feedback}\nResponse: ${response}`;
-        user.responses.push(combinedResponse);
+
+        // Update the responses array for the user
+        const feedbackObject = {
+            feedbackId: feedback._id, // Use the feedback's _id
+            feedback: combinedResponse
+        };
+        user.responses.push(feedbackObject);
         await user.save();
 
         // Send email to user
@@ -448,7 +481,9 @@ const replyToFeedback = async (req, res) => {
     } catch (err) {
         res.status(500).send({ message: "Error processing request", error: err });
     }
-}
+};
+
+
 
 
 const count_total_users = async (req, res) => {
@@ -476,8 +511,72 @@ const count_total_travelagencies = async (req, res) => {
     }
 };
 
+// Disable agency
+const disable_agency = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        if (agency) {
+            agency.disabled = true;
+            await agency.save();
+            res.status(200).send(`Agency ${agency.name} has been disabled`);
+        } else {
+            res.status(404).send('Agency not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+// Enable agency
+const enable_agency = async (req, res) => {
+    const { agencyId } = req.params;
+    try {
+        const agency = await TravelAgency.findById(agencyId);
+        console.log(agency);
+        if (agency) {
+            agency.disabled = false;
+            await agency.save();
+            res.status(200).send(`Agency ${agency.name} has been enabled`);
+        } else {
+            res.status(404).send('Agency not found');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
+
+const logout_admin = async (req, res) => {
+    res.clearCookie('auth_token'); // Clearing the authentication cookie
+    res.status(200).send('Logout successful');
+};
 
 
 
-module.exports = { signup_admin, login_admin, forgot_password,get_all_users, disable_user, enable_user, getAllPackages, disable_package, enable_package, update_Package, view_trend, view_user_trends,get_all_travelagencies, get_all_feedbacks, replyToFeedback, getAllRatings, count_total_users, count_total_travelagencies };
+
+module.exports = {
+    signup_admin,
+    login_admin,
+    forgot_password,
+    get_all_users,
+    disable_user,
+    enable_user,
+    getAllPackages,
+    disable_package,
+    enable_package,
+    update_Package,
+    view_trend,
+    view_user_trends,
+    get_all_travelagencies,
+    get_all_feedbacks,
+    replyToFeedback,
+    getAllRatings,
+    count_total_users,
+    count_total_travelagencies,
+    disable_agency,
+    enable_agency,
+    get_travelagency_byID,
+    logout_admin
+};
 
